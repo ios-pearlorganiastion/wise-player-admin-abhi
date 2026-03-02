@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+
+:root {
+  --primary-glow: #6a5acd;
+  --secondary-glow: #ff00c1;
+}
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f0c29; /* Fallback */
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  overflow: hidden;
+  position: relative;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Background Animated Shapes */
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  animation: move 10s infinite alternate;
+}
+
+.shape-1 {
+  width: 300px;
+  height: 300px;
+  background: var(--primary-glow);
+  top: -100px;
+  left: -100px;
+}
+
+.shape-2 {
+  width: 400px;
+  height: 400px;
+  background: var(--secondary-glow);
+  bottom: -150px;
+  right: -100px;
+  animation-duration: 15s;
+}
+
+@keyframes move {
+  from { transform: translate(0, 0); }
+  to { transform: translate(100px, 100px); }
+}
+
+/* Glass Card */
+.auth-card {
+  width: 420px;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 24px !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.card-content {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+}
+
+.brand-logo {
+  font-weight: 800;
+  letter-spacing: 4px;
+  background: linear-gradient(to right, #fff, #a5a5a5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 2.5rem;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.login-title {
+  color: white;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Custom Input Styling */
+.custom-input-group .input-group-text {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff;
+  border-right: none !important;
+  border-radius: 12px 0 0 12px !important;
+}
+
+.custom-input-group .form-control {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border-left: none !important;
+  border-radius: 0 12px 12px 0 !important;
+  padding: 12px;
+}
+
+.custom-input-group .form-control:focus {
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  border-color: var(--primary-glow) !important;
+}
+
+.forgot-pass {
+  font-size: 0.8rem;
+  color: #ffcc00;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.forgot-pass:hover {
+  text-shadow: 0 0 10px #ffcc00;
+}
+
+/* Neon Button */
+.login-btn {
+  background: linear-gradient(45deg, #6a5acd, #ff00c1) !important;
+  border: none !important;
+  padding: 12px !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  letter-spacing: 1px;
+  transition: 0.4s !important;
+}
+
+.login-btn:hover {
+  box-shadow: 0 0 20px rgba(106, 90, 205, 0.6) !important;
+  transform: translateY(-2px);
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 25px 0;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.7rem;
+}
+
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 10px;
+}
+
+/* Social Grid */
+.social-grid {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.social-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  transition: 0.3s;
+}
+
+.social-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px);
+  border-color: white;
+}
+
+.auth-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.toggle-btn {
+  color: #00d4ff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.custom-alert {
+  background: rgba(220, 53, 69, 0.2) !important;
+  border: 1px solid #dc3545 !important;
+  color: #ff8a8a !important;
+  font-size: 0.8rem;
+  border-radius: 10px;
+}

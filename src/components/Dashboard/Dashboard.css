@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+.dashboard-container {
+  background-color: #050505;
+  min-height: 100vh;
+  display: flex;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #fff;
+}
+
+/* Sidebar Glass Effect */
+.glass-sidebar {
+  width: 90px;
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(15px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.logo-box {
+  color: #E50914;
+  font-weight: 800;
+  font-size: 1.8rem;
+  margin-bottom: 50px;
+  text-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
+}
+
+.nav-item {
+  font-size: 1.5rem;
+  margin-bottom: 35px;
+  color: #444;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.nav-item.active, .nav-item:hover {
+  color: #E50914;
+  filter: drop-shadow(0 0 10px #E50914);
+}
+
+/* Main Content */
+.content-area {
+  flex-grow: 1;
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.welcome-text h1 {
+  font-weight: 800;
+  margin: 0;
+}
+
+.highlight { color: #E50914; }
+
+.admin-avatar {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #E50914;
+  margin-left: 20px;
+}
+
+/* New Neon Stats Cards */
+.stat-card-new {
+  background: #111;
+  padding: 25px;
+  border-radius: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-label { color: #888; font-size: 0.9rem; }
+.stat-number { font-weight: 800; margin-top: 5px; }
+.stat-icon-box { font-size: 1.8rem; opacity: 0.8; }
+
+.n-red { border-left: 5px solid #E50914; }
+.n-blue { border-left: 5px solid #00d4ff; }
+.n-green { border-left: 5px solid #39FF14; }
+.n-yellow { border-left: 5px solid #FFD700; }
+
+/* Custom Table (Replacing Bootstrap Table to avoid white bg) */
+.recent-section {
+  background: #111;
+  border-radius: 30px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.section-title {
+  font-weight: 700;
+  margin-bottom: 25px;
+  letter-spacing: 1px;
+}
+
+.custom-table-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-header-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  padding: 15px 20px;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #222;
+}
+
+.table-data-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  padding: 20px;
+  align-items: center;
+  border-bottom: 1px solid #222;
+  transition: 0.3s;
+}
+
+.table-data-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: scale(1.01);
+}
+
+.movie-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.mini-poster {
+  width: 45px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Status Pills */
+.status-pill {
+  padding: 8px 15px !important;
+  font-size: 0.75rem !important;
+  border-radius: 10px !important;
+  text-transform: uppercase;
+}
+
+.status-pill.paid { background: rgba(57, 255, 20, 0.1) !important; color: #39FF14 !important; }
+.status-pill.pending { background: rgba(255, 165, 0, 0.1) !important; color: #ffa500 !important; }
