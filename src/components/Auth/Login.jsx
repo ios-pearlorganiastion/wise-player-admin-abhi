@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Form, Button, Card, InputGroup, Alert } from 'react-bootstrap';
 import { FiMail, FiLock, FiGithub, FiTwitter, FiArrowRight } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useLogin } from '../../hooks/useAuth';
 import './Auth.css';
 
 const Login = ({ toggleForm }) => {
@@ -11,17 +12,23 @@ const Login = ({ toggleForm }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const loginMutation = useLogin();
 
   const handleLogin = (e) => {
     e.preventDefault();
-    const dummyEmail = "admin@gmail.com";
-    const dummyPass = "password123";
+    setError('');
 
-    if (email === dummyEmail && password === dummyPass) {
-      navigate('/dashboard');
-    } else {
-      setError("Oye! Sahi details daal. (admin@gmail.com / password123)");
-    }
+    loginMutation.mutate(
+      { username: email, password },
+      {
+        onSuccess: () => {
+          navigate('/dashboard');
+        },
+        onError: (err) => {
+          setError(err.response?.data?.message || err.message || "Invalid credentials.");
+        }
+      }
+    );
   };
 
   return (
@@ -97,8 +104,8 @@ const Login = ({ toggleForm }) => {
               </div>
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button type="submit" className="w-100 login-btn">
-                  SIGN IN <FiArrowRight className="ms-2" />
+                <Button type="submit" className="w-100 login-btn" disabled={loginMutation.isPending}>
+                  {loginMutation.isPending ? "SIGNING IN..." : "SIGN IN"} <FiArrowRight className="ms-2" />
                 </Button>
               </motion.div>
 
@@ -114,7 +121,7 @@ const Login = ({ toggleForm }) => {
             </Form>
 
             <p className="auth-footer">
-              Don't have an account? <span onClick={toggleForm} className="toggle-btn">Create Account</span>
+              Don't have an account? <Link to="/register" className="toggle-btn">Create Account</Link>
             </p>
           </div>
         </Card>
