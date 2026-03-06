@@ -1,11 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
 import Dashboard from './components/Dashboard/Dashboard'; // Is file ko create kar lena
 import Devices from './components/Devices/Devices';
 import Payments from './components/Payments/Payments';
 import Subscriptions from './components/Subscriptions/Subscriptions';
+import AdminManagement from './components/Auth/AdminManagement';
+import AdminSetup from './components/Auth/AdminSetup';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -15,13 +16,14 @@ function App() {
         <Routes>
           {/* Default route Login par jayega */}
           <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
           
           <Route path="/dashboard" element={<Dashboard />} />
           
           <Route path="/devices" element={<Devices />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/admin-management" element={<AdminManagement />} />
+          <Route path="/admin/setup" element={<AdminSetup />} />
         </Routes>
       </div>
     </Router>

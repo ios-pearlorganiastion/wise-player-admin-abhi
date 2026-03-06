@@ -6,6 +6,9 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  username: string;
+  fullName: string;
+  role: "ADMIN" | "SUPER_ADMIN";
 }
 
 export interface SetupRequest {

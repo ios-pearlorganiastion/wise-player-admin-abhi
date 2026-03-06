@@ -13,7 +13,7 @@ export const useLogin = () => {
       return data;
     },
     onSuccess: (data) => {
-      login(data.token);
+      login(data);
     },
   });
 };
@@ -22,6 +22,23 @@ export const useSetup = () => {
   return useMutation<void, Error, SetupRequest>({
     mutationFn: async (userData) => {
       await apiClient.post(AUTH_ENDPOINTS.SETUP, userData);
+    },
+  });
+};
+
+export const useInviteAdmin = () => {
+  return useMutation<{ token: string; inviteUrl: string }, Error, { email: string }>({
+    mutationFn: async (data) => {
+      const response = await apiClient.post(AUTH_ENDPOINTS.INVITE, data);
+      return response.data;
+    },
+  });
+};
+
+export const useCompleteSetup = () => {
+  return useMutation<void, Error, { token: string; password: string; fullName: string }>({
+    mutationFn: async (data) => {
+      await apiClient.post(AUTH_ENDPOINTS.COMPLETE_SETUP, data);
     },
   });
 };

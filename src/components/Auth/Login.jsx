@@ -121,7 +121,7 @@ const Login = ({ toggleForm }) => {
             </Form>
 
             <p className="auth-footer">
-              Don't have an account? <Link to="/register" className="toggle-btn">Create Account</Link>
+              Secure Admin Portal
             </p>
           </div>
         </Card>

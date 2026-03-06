@@ -1,14 +1,16 @@
 import React from 'react';
 import { Container, Row, Col, Badge, Image, Spinner, Alert } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiStar, FiActivity } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiStar, FiActivity, FiUserPlus } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSubscriptions } from '../../hooks/useSubscriptions';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats();
   // Fetch a small chunk for "recent"
   const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 5);
@@ -30,6 +32,9 @@ const Dashboard = () => {
           <div className="nav-item" onClick={() => navigate('/devices')} style={{cursor: 'pointer'}}><FiUsers /></div>
           <div className="nav-item" onClick={() => navigate('/payments')} style={{cursor: 'pointer'}}><FiDollarSign /></div>
           <div className="nav-item" onClick={() => navigate('/subscriptions')} style={{cursor: 'pointer'}}><FiTrendingUp /></div>
+          {user?.role === 'SUPER_ADMIN' && (
+            <div className="nav-item" onClick={() => navigate('/admin-management')} title="Admin Management" style={{cursor: 'pointer'}}><FiUserPlus /></div>
+          )}
         </nav>
       </div>
 
