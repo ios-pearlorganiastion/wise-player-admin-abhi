@@ -41,7 +41,7 @@ const Payments = () => {
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
-            <Image src="https://i.pravatar.cc/150?u=admin" roundedCircle className="admin-avatar" />
+            <Image src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" roundedCircle className="admin-avatar" />
           </div>
         </header>
 
@@ -96,11 +96,11 @@ const Payments = () => {
                   className="table-data-row align-items-center"
                 >
                   <div className="td-cell fw-bold text-truncate" style={{maxWidth: '150px'}} title={payment.transactionId || payment.id}>
-                    {payment.transactionId || (payment.id.split('-')[0])}
+                    {payment.transactionId || (typeof payment.id === 'string' ? payment.id.split('-')[0] : 'N/A')}
                   </div>
                   <div className="td-cell">{payment.amount} {payment.currency}</div>
                   <div className="td-cell">{payment.paymentMethod}</div>
-                  <div className="td-cell text-muted">{new Date(payment.createdAt).toLocaleString()}</div>
+                  <div className="td-cell text-white">{new Date(payment.createdAt).toLocaleString()}</div>
                   <div className="td-cell text-center">
                     <Badge className={`status-pill ${payment.status?.toLowerCase() || 'pending'}`}>
                       {payment.status}

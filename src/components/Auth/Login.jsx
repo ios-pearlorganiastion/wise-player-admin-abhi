@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Form, Button, Card, InputGroup, Alert } from 'react-bootstrap';
-import { FiMail, FiLock, FiGithub, FiTwitter, FiArrowRight } from 'react-icons/fi';
-import { FcGoogle } from 'react-icons/fc';
-import { useNavigate, Link } from 'react-router-dom';
+import { FiUser, FiLock, FiArrowRight } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import { useLogin } from '../../hooks/useAuth';
 import './Auth.css';
 
-const Login = ({ toggleForm }) => {
+const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const loginMutation = useLogin();
@@ -19,7 +18,7 @@ const Login = ({ toggleForm }) => {
     setError('');
 
     loginMutation.mutate(
-      { username: email, password },
+      { username, password },
       {
         onSuccess: () => {
           navigate('/dashboard');
@@ -33,7 +32,7 @@ const Login = ({ toggleForm }) => {
 
   return (
     <div className="auth-container">
-      {/* Background Shapes for extra "Khatarnak" look */}
+      {/* Background Shapes */}
       <div className="shape shape-1"></div>
       <div className="shape shape-2"></div>
 
@@ -55,10 +54,10 @@ const Login = ({ toggleForm }) => {
               >
                 WISE PLAYER
               </motion.h1>
-              <p className="subtitle">Experience the sound of wisdom</p>
+              <p className="subtitle">Secure Admin Access</p>
             </div>
 
-            <h3 className="login-title">Welcome Back</h3>
+            <h3 className="login-title">Admin Login</h3>
 
             <AnimatePresence>
               {error && (
@@ -74,24 +73,26 @@ const Login = ({ toggleForm }) => {
             
             <Form onSubmit={handleLogin} className="mt-4">
               <Form.Group className="mb-4 custom-input-group">
+                <Form.Label className="text-light small mb-2">Username</Form.Label>
                 <InputGroup>
-                  <InputGroup.Text><FiMail /></InputGroup.Text>
+                  <InputGroup.Text><FiUser /></InputGroup.Text>
                   <Form.Control 
-                    type="email" 
-                    placeholder="Email address" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text" 
+                    placeholder="Enter admin username" 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required 
                   />
                 </InputGroup>
               </Form.Group>
 
               <Form.Group className="mb-3 custom-input-group">
+                <Form.Label className="text-light small mb-2">Password</Form.Label>
                 <InputGroup>
                   <InputGroup.Text><FiLock /></InputGroup.Text>
                   <Form.Control 
                     type="password" 
-                    placeholder="Password" 
+                    placeholder="Enter password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required 
@@ -99,29 +100,17 @@ const Login = ({ toggleForm }) => {
                 </InputGroup>
               </Form.Group>
 
-              <div className="text-end mb-4">
-                <span className="forgot-pass">Forgot Password?</span>
-              </div>
+
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button type="submit" className="w-100 login-btn" disabled={loginMutation.isPending}>
                   {loginMutation.isPending ? "SIGNING IN..." : "SIGN IN"} <FiArrowRight className="ms-2" />
                 </Button>
               </motion.div>
-
-              <div className="divider">
-                <span>OR CONTINUE WITH</span>
-              </div>
-
-              <div className="social-grid">
-                <button type="button" className="social-item"><FcGoogle /></button>
-                <button type="button" className="social-item"><FiGithub /></button>
-                <button type="button" className="social-item twitter"><FiTwitter /></button>
-              </div>
             </Form>
 
-            <p className="auth-footer">
-              Secure Admin Portal
+            <p className="auth-footer mt-4">
+              Secure Admin Portal v1.0
             </p>
           </div>
         </Card>

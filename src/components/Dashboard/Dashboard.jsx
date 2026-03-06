@@ -46,7 +46,7 @@ const Dashboard = () => {
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
-            <Image src="https://i.pravatar.cc/150?u=admin" roundedCircle className="admin-avatar" />
+            <Image src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" roundedCircle className="admin-avatar" />
           </div>
         </header>
 
@@ -112,8 +112,8 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="td-cell fw-bold">{sub.plan}</div>
-                  <div className="td-cell text-muted">{new Date(sub.startDate).toLocaleDateString()}</div>
-                  <div className="td-cell text-muted">{new Date(sub.endDate).toLocaleDateString()}</div>
+                  <div className="td-cell text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
+                  <div className="td-cell text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
                   <div className="td-cell text-center">
                     <Badge className={`status-pill ${sub.status.toLowerCase()}`}>
                       {sub.status}

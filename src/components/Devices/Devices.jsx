@@ -41,7 +41,7 @@ const Devices = () => {
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
-            <Image src="https://i.pravatar.cc/150?u=admin" roundedCircle className="admin-avatar" />
+            <Image src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" roundedCircle className="admin-avatar" />
           </div>
         </header>
 
@@ -73,7 +73,7 @@ const Devices = () => {
                 >
                   <div className="td-cell fw-bold">{device.macAddress}</div>
                   <div className="td-cell">{device.deviceModel || 'Unknown'}</div>
-                  <div className="td-cell text-muted">{new Date(device.createdAt).toLocaleDateString()}</div>
+                  <div className="td-cell text-white">{new Date(device.createdAt).toLocaleDateString()}</div>
                   <div className="td-cell text-center">
                     <Badge className={`status-pill ${device.status?.toLowerCase() || 'inactive'}`}>
                       {device.status}

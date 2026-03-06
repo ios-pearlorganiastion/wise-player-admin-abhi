@@ -40,7 +40,7 @@
 }
 
 .nav-item.active, .nav-item:hover {
-  color: #E50914;
+  color: #fff; /* White for better visibility */
   filter: drop-shadow(0 0 10px #E50914);
 }
 
@@ -71,6 +71,7 @@
   height: 50px;
   border: 2px solid #E50914;
   margin-left: 20px;
+  background: #222;
 }
 
 /* New Neon Stats Cards */
@@ -116,10 +117,12 @@
   display: grid;
   grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
   padding: 15px 20px;
-  color: #555;
-  font-weight: 600;
-  font-size: 0.8rem;
+  color: #fff; /* Changed from #555 for visibility */
+  font-weight: 700;
+  font-size: 0.85rem;
   border-bottom: 1px solid #222;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .table-data-row {
