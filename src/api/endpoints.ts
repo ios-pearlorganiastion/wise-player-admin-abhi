@@ -1,7 +1,6 @@
 // Authentication Endpoints
 export const AUTH_ENDPOINTS = {
   LOGIN: "/api/admin/auth/login",
-  SETUP: "/api/admin/auth/setup",
   INVITE: "/api/admin/management/invite",
   VERIFY_INVITE: "/api/admin/management/invite/verify",
   COMPLETE_SETUP: "/api/admin/management/setup/complete",

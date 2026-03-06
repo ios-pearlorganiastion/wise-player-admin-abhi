@@ -11,13 +11,6 @@ export interface LoginResponse {
   role: "ADMIN" | "SUPER_ADMIN";
 }
 
-export interface SetupRequest {
-  username: string;
-  password?: string;
-  fullName: string;
-  role: "ADMIN" | "USER"; 
-}
-
 // Pagination Base Types
 export interface PaginatedResponse<T> {
   content: T[];
