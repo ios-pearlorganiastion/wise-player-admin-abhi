@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Form, Modal } from 'react-bootstrap';
-import { motion } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions, useCreateManualSubscription, useDeleteSubscription } from '../../hooks/useSubscriptions';
+import { useAuthContext } from '../../contexts/AuthContext';
 import '../Dashboard/Dashboard.css';
 
 const Subscriptions = () => {
   const navigate = useNavigate();
+  const { logout, user } = useAuthContext();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [page, setPage] = useState(0);
   const size = 10;
   
@@ -54,24 +57,63 @@ const Subscriptions = () => {
             <p>Manage user plans and manual overrides</p>
           </div>
           <div className="profile-section">
-            <Button variant="info" className="me-3 fw-bold text-white shadow-sm" style={{borderRadius: '8px'}} onClick={() => setShowModal(true)}>
-              <FiPlus className="me-2"/> Manual Sub
-            </Button>
             <div className="notif-bell"><FiActivity /></div>
-            <Image src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" roundedCircle className="admin-avatar" />
+            
+            <div className="profile-dropdown-container">
+              <div 
+                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+              >
+                <Image 
+                  src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" 
+                  className="admin-avatar m-0" 
+                  roundedCircle
+                />
+              </div>
+
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="profile-menu"
+                  >
+                    <div className="px-3 py-2">
+                      <div className="fw-bold text-white">{user?.fullName || 'Admin'}</div>
+                      <div className="small text-muted">{user?.role}</div>
+                    </div>
+                    <div className="profile-menu-divider"></div>
+                    <div className="profile-menu-item logout" onClick={logout}>
+                      <FiLogOut /> Logout
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
 
-        <div className="recent-section mt-4">
+        <div className="action-row mb-4">
+          <Button 
+            variant="info" 
+            className="fw-bold text-white shadow-sm px-4" 
+            style={{ borderRadius: '12px', height: '48px' }} 
+            onClick={() => setShowModal(true)}
+          >
+            <FiPlus className="me-2" style={{ fontSize: '1.2rem' }}/> Manual Subscription
+          </Button>
+        </div>
+
+        <div className="recent-section">
           <h3 className="section-title">Subscription List</h3>
-          <div className="custom-table-wrapper">
-            <div className="table-header-row">
+          <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
+            <div className="table-header-row subs-table-grid" style={{ minWidth: '1000px' }}>
               <div className="th-cell">DEVICE ID</div>
               <div className="th-cell">PLAN</div>
               <div className="th-cell">START DATE</div>
               <div className="th-cell">END DATE</div>
               <div className="th-cell text-center">STATUS</div>
-              <div className="th-cell text-center">ACTION</div>
             </div>
 
             {isLoading ? (
@@ -87,9 +129,10 @@ const Subscriptions = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="table-data-row align-items-center"
+                  className="table-data-row align-items-center subs-table-grid"
+                  style={{ minWidth: '1000px' }}
                 >
-                  <div className="td-cell fw-bold text-truncate" style={{maxWidth: '150px'}} title={sub.deviceId}>
+                  <div className="td-cell fw-bold text-white" title={sub.deviceId}>
                     {sub.deviceId}
                   </div>
                   <div className="td-cell">{sub.plan}</div>
@@ -99,16 +142,6 @@ const Subscriptions = () => {
                     <Badge className={`status-pill ${sub.status?.toLowerCase() || 'expired'}`}>
                       {sub.status}
                     </Badge>
-                  </div>
-                  <div className="td-cell text-center">
-                    <Button 
-                      variant="outline-danger" 
-                      size="sm"
-                      disabled={deleteSubMutation.isPending}
-                      onClick={() => handleDelete(sub.id)}
-                    >
-                      <FiTrash2 />
-                    </Button>
                   </div>
                 </motion.div>
               ))
@@ -162,7 +195,6 @@ const Subscriptions = () => {
                 onChange={e => setNewSub({...newSub, plan: e.target.value})}
                 className="bg-secondary text-white border-0"
               >
-                <option value="MONTHLY">Monthly</option>
                 <option value="ANNUAL">Annual</option>
                 <option value="LIFETIME">Lifetime</option>
               </Form.Select>

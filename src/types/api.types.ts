@@ -41,13 +41,20 @@ export interface DashboardStats {
 
 // Device Types
 export interface Device {
-  id: string; // uuid
-  macAddress: string;
-  status: "ACTIVE" | "BLOCKED" | "INACTIVE";
-  lastActiveAt?: string;
-  deviceModel?: string;
-  createdAt: string;
-  updatedAt?: string;
+  deviceId: string;
+  deviceStatus: "ACTIVE" | "BLOCKED" | "INACTIVE";
+  subscriptionType: string;
+  deviceModel: string;
+  osVersion: string;
+  platform: string;
+  registeredAt: string;
+  lastSeenAt: string;
+  expiresAt: string;
+  // Legacy fields for compatibility
+  id?: string;
+  macAddress?: string;
+  status?: string;
+  createdAt?: string;
 }
 
 export interface UpdateDeviceStatusRequest {
@@ -57,18 +64,24 @@ export interface UpdateDeviceStatusRequest {
 // Payment Types
 export interface Payment {
   id: string; // uuid
+  paymentId: string;
+  deviceId: string;
   amount: number;
   currency: string;
+  plan: string;
   paymentMethod: string;
-  status: "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED";
+  paypalOrderId?: string;
+  status: "SUCCESS" | "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED";
   transactionId?: string;
   createdAt: string;
 }
 
 export interface PaymentStats {
+  totalTransactions: number;
+  successfulTransactions: number;
   totalRevenue: number;
-  monthlyRevenue: number;
-  transactionsCount: number;
+  monthlyRevenue?: number;
+  transactionsCount?: number;
 }
 
 // Subscription Types

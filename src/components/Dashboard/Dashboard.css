@@ -134,9 +134,53 @@
   transition: 0.3s;
 }
 
+/* Specialized Grid for Subscriptions Table (5 columns) */
+.subs-table-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) 120px 150px 150px 120px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px 25px;
+  border-bottom: 1px solid #222;
+  transition: 0.3s;
+}
+
+.subs-table-grid:hover {
+  background: rgba(255, 255, 255, 0.05); /* Slightly darker for clarity */
+}
+
+/* Specialized Grid for Payments Table (6 columns) */
+.payment-table-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) 120px 150px 150px 150px 120px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px 25px;
+  border-bottom: 1px solid #222;
+  transition: 0.3s;
+}
+
+.payment-table-grid:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.device-table-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) 120px 160px 150px 120px 120px 150px 200px 150px 120px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px 25px;
+  border-bottom: 1px solid #222;
+  transition: 0.3s;
+}
+
+.device-table-grid:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .table-data-row:hover {
-  background: rgba(255, 255, 255, 0.03);
-  transform: scale(1.01);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 
 .movie-info {
@@ -161,4 +205,67 @@
 }
 
 .status-pill.paid { background: rgba(57, 255, 20, 0.1) !important; color: #39FF14 !important; }
-.status-pill.pending { background: rgba(255, 165, 0, 0.1) !important; color: #ffa500 !important; }
+/* Profile Dropdown */
+.profile-dropdown-container {
+  position: relative;
+  margin-left: 20px;
+}
+
+.profile-avatar-trigger {
+  cursor: pointer;
+  transition: 0.3s;
+  padding: 2px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.profile-avatar-trigger:hover, .profile-avatar-trigger.active {
+  border-color: #E50914;
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 10px rgba(229, 9, 20, 0.4));
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: 0;
+  background: rgba(15, 15, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  width: 200px;
+  padding: 10px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  color: #bbb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 600;
+}
+
+.profile-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.profile-menu-item.logout {
+  color: #E50914;
+}
+
+.profile-menu-item.logout:hover {
+  background: rgba(229, 9, 20, 0.1);
+}
+
+.profile-menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 8px 0;
+}

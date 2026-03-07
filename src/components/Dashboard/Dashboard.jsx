@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Badge, Image, Spinner, Alert } from 'react-bootstrap';
-import { motion } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiStar, FiActivity, FiUserPlus } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiStar, FiActivity, FiUserPlus, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
@@ -10,7 +10,8 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user, logout } = useAuthContext();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats();
   // Fetch a small chunk for "recent"
   const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 5);
@@ -46,7 +47,39 @@ const Dashboard = () => {
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
-            <Image src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" roundedCircle className="admin-avatar" />
+            
+            <div className="profile-dropdown-container">
+              <div 
+                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+              >
+                <Image 
+                  src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" 
+                  roundedCircle 
+                  className="admin-avatar m-0" 
+                />
+              </div>
+
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="profile-menu"
+                  >
+                    <div className="px-3 py-2">
+                      <div className="fw-bold text-white">{user?.fullName || 'Admin'}</div>
+                      <div className="small text-muted">{user?.role}</div>
+                    </div>
+                    <div className="profile-menu-divider"></div>
+                    <div className="profile-menu-item logout" onClick={logout}>
+                      <FiLogOut /> Logout
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
 

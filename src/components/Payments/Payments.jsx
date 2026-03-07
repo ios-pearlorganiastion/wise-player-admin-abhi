@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button } from 'react-bootstrap';
-import { motion } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { usePayments, usePaymentStats } from '../../hooks/usePayments';
+import { useAuthContext } from '../../contexts/AuthContext';
 import '../Dashboard/Dashboard.css';
 
 const Payments = () => {
   const navigate = useNavigate();
+  const { logout, user } = useAuthContext();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [page, setPage] = useState(0);
   const size = 10;
   
@@ -15,9 +18,9 @@ const Payments = () => {
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = usePaymentStats();
 
   const stats = [
-    { title: "Total Revenue", value: `₹${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
-    { title: "Monthly Revenue", value: `₹${statsData?.monthlyRevenue || 0}`, icon: <FiTrendingUp />, color: "n-green", shadow: "rgba(57, 255, 20, 0.4)" },
-    { title: "Total Transactions", value: statsData?.transactionsCount || 0, icon: <FiActivity />, color: "n-yellow", shadow: "rgba(255, 215, 0, 0.4)" },
+    { title: "Total Revenue", value: `${statsData?.totalRevenue || 0} €`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
+    { title: "Successful Transactions", value: statsData?.successfulTransactions || 0, icon: <FiTrendingUp />, color: "n-green", shadow: "rgba(57, 255, 20, 0.4)" },
+    { title: "Total Transactions", value: statsData?.totalTransactions || 0, icon: <FiActivity />, color: "n-yellow", shadow: "rgba(255, 215, 0, 0.4)" },
   ];
 
   return (
@@ -41,7 +44,39 @@ const Payments = () => {
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
-            <Image src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" roundedCircle className="admin-avatar" />
+            
+            <div className="profile-dropdown-container">
+              <div 
+                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+              >
+                <Image 
+                  src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" 
+                  roundedCircle 
+                  className="admin-avatar m-0" 
+                />
+              </div>
+
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="profile-menu"
+                  >
+                    <div className="px-3 py-2">
+                      <div className="fw-bold text-white">{user?.fullName || 'Admin'}</div>
+                      <div className="small text-muted">{user?.role}</div>
+                    </div>
+                    <div className="profile-menu-divider"></div>
+                    <div className="profile-menu-item logout" onClick={logout}>
+                      <FiLogOut /> Logout
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
 
@@ -71,12 +106,13 @@ const Payments = () => {
 
         <div className="recent-section">
           <h3 className="section-title">Transactions</h3>
-          <div className="custom-table-wrapper">
-            <div className="table-header-row">
+          <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
+            <div className="table-header-row payment-table-grid" style={{ minWidth: '1100px' }}>
               <div className="th-cell">TRANSACTION ID</div>
               <div className="th-cell">AMOUNT</div>
               <div className="th-cell">METHOD</div>
               <div className="th-cell">DATE</div>
+              <div className="th-cell">TIME</div>
               <div className="th-cell text-center">STATUS</div>
             </div>
 
@@ -93,14 +129,16 @@ const Payments = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="table-data-row align-items-center"
+                  className="table-data-row align-items-center payment-table-grid"
+                  style={{ minWidth: '1100px' }}
                 >
-                  <div className="td-cell fw-bold text-truncate" style={{maxWidth: '150px'}} title={payment.transactionId || payment.id}>
-                    {payment.transactionId || (typeof payment.id === 'string' ? payment.id.split('-')[0] : 'N/A')}
+                  <div className="td-cell fw-bold text-white" title={payment.paypalOrderId || payment.paymentId || payment.id}>
+                    {payment.paypalOrderId || (payment.paymentId ? payment.paymentId : 'N/A')}
                   </div>
-                  <div className="td-cell">{payment.amount} {payment.currency}</div>
-                  <div className="td-cell">{payment.paymentMethod}</div>
-                  <div className="td-cell text-white">{new Date(payment.createdAt).toLocaleString()}</div>
+                  <div className="td-cell">{payment.amount} €</div>
+                  <div className="td-cell">{payment.paypalOrderId ? 'PayPal' : (payment.paymentMethod || 'N/A')}</div>
+                  <div className="td-cell text-white">{new Date(payment.createdAt).toLocaleDateString()}</div>
+                  <div className="td-cell text-white">{new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   <div className="td-cell text-center">
                     <Badge className={`status-pill ${payment.status?.toLowerCase() || 'pending'}`}>
                       {payment.status}
