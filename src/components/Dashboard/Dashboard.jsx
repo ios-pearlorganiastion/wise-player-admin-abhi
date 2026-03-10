@@ -18,7 +18,7 @@ const Dashboard = () => {
 
   const stats = [
     { title: "Total Devices", value: statsData?.totalDevices || 0, icon: <FiUsers />, color: "n-red", shadow: "rgba(229, 9, 20, 0.4)" },
-    { title: "Net Revenue", value: `₹${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
+    { title: "Net Revenue", value: `€${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
     { title: "Active Devices", value: statsData?.activeDevices || 0, icon: <FiActivity />, color: "n-green", shadow: "rgba(57, 255, 20, 0.4)" },
     { title: "Active Subs", value: statsData?.activeSubscriptions || 0, icon: <FiStar />, color: "n-yellow", shadow: "rgba(255, 215, 0, 0.4)" },
   ];

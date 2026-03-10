@@ -18,7 +18,7 @@ const Payments = () => {
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = usePaymentStats();
 
   const stats = [
-    { title: "Total Revenue", value: `${statsData?.totalRevenue || 0} €`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
+    { title: "Total Revenue", value: `€${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
     { title: "Successful Transactions", value: statsData?.successfulTransactions || 0, icon: <FiTrendingUp />, color: "n-green", shadow: "rgba(57, 255, 20, 0.4)" },
     { title: "Total Transactions", value: statsData?.totalTransactions || 0, icon: <FiActivity />, color: "n-yellow", shadow: "rgba(255, 215, 0, 0.4)" },
   ];

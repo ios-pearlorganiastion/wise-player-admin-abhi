@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Card, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { FiLock, FiUser, FiArrowRight, FiShield } from 'react-icons/fi';
 import { useCompleteSetup } from '../../hooks/useAuth';
+import { apiClient } from '../../api/axios';
+import { AUTH_ENDPOINTS } from '../../api/endpoints';
 import './Auth.css';
 
 const AdminSetup = () => {
@@ -18,11 +20,28 @@ const AdminSetup = () => {
   const [success, setSuccess] = useState('');
 
   const completeSetupMutation = useCompleteSetup();
+  const [isValidating, setIsValidating] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      setError("Invalid or missing invitation token.");
-    }
+    const verifyToken = async () => {
+      if (!token) {
+        setError("Invalid or missing invitation token.");
+        setIsValidating(false);
+        return;
+      }
+
+      try {
+        setIsValidating(true);
+        // We call the API to verify if the token is valid/unused before showing the form
+        await apiClient.get(`${AUTH_ENDPOINTS.VERIFY_INVITE}?token=${token}`);
+        setIsValidating(false);
+      } catch (err) {
+        setError(err.response?.data?.message || "This invitation link is invalid or has expired.");
+        setIsValidating(false);
+      }
+    };
+
+    verifyToken();
   }, [token]);
 
   const handleSubmit = (e) => {
@@ -53,7 +72,19 @@ const AdminSetup = () => {
     );
   };
 
-  if (!token && !success) {
+  if (isValidating) {
+    return (
+      <div className="auth-container d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
+        <motion.div
+           animate={{ rotate: 360 }}
+           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+           style={{ width: 50, height: 50, border: '5px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--primary-glow)', borderRadius: '50%' }}
+        />
+      </div>
+    );
+  }
+
+  if (error && !success) {
     return (
       <div className="auth-container d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
         <Alert variant="danger" className="text-center" style={{ maxWidth: '400px' }}>
