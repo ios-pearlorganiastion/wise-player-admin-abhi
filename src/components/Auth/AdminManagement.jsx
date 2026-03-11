@@ -21,12 +21,13 @@ const AdminManagement = () => {
     inviteMutation.mutate(
       { email },
       {
-        onSuccess: (data) => {
-          setSuccess(`Invitation sent! Link: ${window.location.origin}${data.inviteUrl}`);
+        onSuccess: () => {
+          setSuccess("Invitation sent!");
           setEmail('');
+          // Removed the timeout to keep the green state until manual reset or navigation
         },
         onError: (err) => {
-          setError(err.response?.data?.message || err.message || "Failed to send invitation.");
+          setError(err.message || "Failed to send invitation.");
         }
       }
     );
@@ -68,8 +69,14 @@ const AdminManagement = () => {
                 </div>
               </Form.Group>
 
-              <Button type="submit" className="w-100 login-btn" disabled={inviteMutation.isPending}>
-                {inviteMutation.isPending ? "SENDING..." : "SEND INVITATION"} <FiSend className="ms-2" />
+
+              <Button 
+                type="submit" 
+                className={`w-100 login-btn ${success ? 'success-btn' : ''}`} 
+                disabled={inviteMutation.isPending || !!success}
+              >
+                {inviteMutation.isPending ? "SENDING..." : success ? "SENT" : "SEND INVITATION"} 
+                <FiSend className="ms-2" />
               </Button>
             </Form>
           </div>

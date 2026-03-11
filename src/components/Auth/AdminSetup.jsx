@@ -66,7 +66,7 @@ const AdminSetup = () => {
           setTimeout(() => navigate('/'), 3000);
         },
         onError: (err) => {
-          setError(err.response?.data?.message || err.message || "Failed to complete setup.");
+          setError(err.message || "Failed to complete setup.");
         }
       }
     );
@@ -84,13 +84,13 @@ const AdminSetup = () => {
     );
   }
 
-  if (error && !success) {
+  if (error && !success && !token) {
     return (
       <div className="auth-container d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-        <Alert variant="danger" className="text-center" style={{ maxWidth: '400px' }}>
-          <h4>Invalid Link</h4>
-          <p>This invitation link is invalid or has expired.</p>
-          <Button onClick={() => navigate('/')}>Go to Login</Button>
+        <Alert variant="danger" className="text-center custom-alert" style={{ maxWidth: '400px', padding: '2rem' }}>
+          <h4 className="text-light mb-3">Invalid Link</h4>
+          <p className="mb-4">{error}</p>
+          <Button className="login-btn w-100" onClick={() => navigate('/')}>Back to Login</Button>
         </Alert>
       </div>
     );

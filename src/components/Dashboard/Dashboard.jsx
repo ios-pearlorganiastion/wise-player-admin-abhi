@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Container, Row, Col, Badge, Image, Spinner, Alert } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiStar, FiActivity, FiUserPlus, FiLogOut } from 'react-icons/fi';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSubscriptions } from '../../hooks/useSubscriptions';
+import ColumnFilter from '../Shared/ColumnFilter';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -14,7 +15,29 @@ const Dashboard = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats();
   // Fetch a small chunk for "recent"
-  const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 5);
+  const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 50); // Fetch more for filtering
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    deviceId: '',
+    plan: '',
+    status: ''
+  });
+
+  const handleFilterChange = (column, value) => {
+    setFilters(prev => ({ ...prev, [column]: value }));
+  };
+
+  const filteredSubs = useMemo(() => {
+    if (!subsData?.content) return [];
+    return subsData.content.filter(sub => {
+      return (
+        sub.deviceId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
+        (filters.plan === '' || sub.plan === filters.plan) &&
+        (filters.status === '' || sub.status === filters.status)
+      );
+    }).slice(0, 5); // Keep only top 5 for dashboard
+  }, [subsData, filters]);
 
   const stats = [
     { title: "Total Devices", value: statsData?.totalDevices || 0, icon: <FiUsers />, color: "n-red", shadow: "rgba(229, 9, 20, 0.4)" },
@@ -42,7 +65,10 @@ const Dashboard = () => {
       <div className="content-area">
         <header className="dash-header">
           <div className="welcome-text">
-            <h1>Admin <span className="highlight">Dashboard</span></h1>
+            <h1>
+              {user?.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin'}{' '}
+              <span className="highlight">Dashboard</span>
+            </h1>
             <p>Real-time analytics & subscriptions</p>
           </div>
           <div className="profile-section">
@@ -54,7 +80,7 @@ const Dashboard = () => {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
                 <Image 
-                  src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" 
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
                   roundedCircle 
                   className="admin-avatar m-0" 
                 />
@@ -69,8 +95,8 @@ const Dashboard = () => {
                     className="profile-menu"
                   >
                     <div className="px-3 py-2">
-                      <div className="fw-bold text-white">{user?.fullName || 'Admin'}</div>
-                      <div className="small text-muted">{user?.role}</div>
+                       <div className="fw-bold text-white">{user?.fullName}</div>
+                       <div className="small text-muted">{user?.role}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -111,24 +137,48 @@ const Dashboard = () => {
 
         {/* Table Section */}
         <div className="recent-section">
-          <h3 className="section-title">Recent Subscriptions</h3>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+             <h3 className="section-title m-0">Recent Subscriptions</h3>
+             <Badge bg="dark" className="text-muted border border-secondary px-3 py-2">
+               Top {filteredSubs.length} results
+             </Badge>
+          </div>
+          
           <div className="custom-table-wrapper">
             <div className="table-header-row">
-              <div className="th-cell">DEVICE ID</div>
-              <div className="th-cell">PLAN</div>
+              <div className="th-cell">
+                DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
+              </div>
+              <div className="th-cell">
+                PLAN 
+                <ColumnFilter 
+                  column="plan" 
+                  onFilterChange={handleFilterChange} 
+                  placeholder="Plan" 
+                  options={[{label: 'Monthly', value: 'MONTHLY'}, {label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'}]}
+                />
+              </div>
               <div className="th-cell">START DATE</div>
               <div className="th-cell">END DATE</div>
-              <div className="th-cell text-center">STATUS</div>
+              <div className="th-cell text-center">
+                STATUS
+                <ColumnFilter 
+                  column="status" 
+                  onFilterChange={handleFilterChange} 
+                  placeholder="Status" 
+                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Expired', value: 'EXPIRED'}]}
+                />
+              </div>
             </div>
 
             {isSubsLoading ? (
               <div className="text-center my-3"><Spinner animation="border" variant="info" size="sm" /></div>
             ) : subsError ? (
               <Alert variant="danger" className="m-3">Failed to load recent subscriptions: {subsError.message}</Alert>
-            ) : subsData?.content?.length === 0 ? (
-              <div className="p-4 text-center text-muted">No recent subscriptions found.</div>
+            ) : filteredSubs.length === 0 ? (
+              <div className="p-4 text-center text-muted">No matching subscriptions found.</div>
             ) : (
-              subsData?.content?.map((sub, index) => (
+              filteredSubs.map((sub, index) => (
                 <motion.div 
                   key={sub.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -137,14 +187,14 @@ const Dashboard = () => {
                   className="table-data-row"
                 >
                   <div className="td-cell">
-                    <div className="movie-info">
+                    <div className="movie-info px-2">
                       <FiPlay className="text-info me-2" />
-                      <span className="text-truncate" style={{maxWidth: '120px'}} title={sub.deviceId}>
+                      <span className="text-truncate fw-bold text-white" style={{maxWidth: '120px'}} title={sub.deviceId}>
                         {sub.deviceId}
                       </span>
                     </div>
                   </div>
-                  <div className="td-cell fw-bold">{sub.plan}</div>
+                  <div className="td-cell">{sub.plan}</div>
                   <div className="td-cell text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
                   <div className="td-cell text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
                   <div className="td-cell text-center">

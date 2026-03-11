@@ -43,8 +43,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_user");
-    setToken(null);
-    setUser(null);
+    // We don't clear the state immediately to avoid UI flicker during redirect. 
+    // The browser will reload the page and clear state anyway.
     window.location.href = "/";
   };
 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { usePayments, usePaymentStats } from '../../hooks/usePayments';
 import { useAuthContext } from '../../contexts/AuthContext';
+import ColumnFilter from '../Shared/ColumnFilter';
 import '../Dashboard/Dashboard.css';
 
 const Payments = () => {
@@ -12,10 +13,34 @@ const Payments = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [page, setPage] = useState(0);
-  const size = 10;
+  const size = 100;
   
   const { data: paymentsData, isLoading: isPaymentsLoading, error: paymentsError } = usePayments(page, size);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = usePaymentStats();
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    transactionId: '',
+    method: '',
+    status: ''
+  });
+
+  const handleFilterChange = (column, value) => {
+    setFilters(prev => ({ ...prev, [column]: value }));
+  };
+
+  const filteredPayments = useMemo(() => {
+    if (!paymentsData?.content) return [];
+    return paymentsData.content.filter(payment => {
+      const id = payment.paypalOrderId || payment.paymentId || payment.id || '';
+      const method = payment.paypalOrderId ? 'PayPal' : (payment.paymentMethod || 'N/A');
+      return (
+        id.toLowerCase().includes(filters.transactionId.toLowerCase()) &&
+        (filters.method === '' || method.toLowerCase().includes(filters.method.toLowerCase())) &&
+        (filters.status === '' || payment.status === filters.status)
+      );
+    });
+  }, [paymentsData, filters]);
 
   const stats = [
     { title: "Total Revenue", value: `€${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
@@ -25,7 +50,6 @@ const Payments = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Sidebar - Reused layout structure */}
       <div className="glass-sidebar">
         <div className="logo-box">WP</div>
         <nav className="nav-links">
@@ -51,7 +75,7 @@ const Payments = () => {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
                 <Image 
-                  src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" 
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
                   roundedCircle 
                   className="admin-avatar m-0" 
                 />
@@ -66,8 +90,8 @@ const Payments = () => {
                     className="profile-menu"
                   >
                     <div className="px-3 py-2">
-                      <div className="fw-bold text-white">{user?.fullName || 'Admin'}</div>
-                      <div className="small text-muted">{user?.role}</div>
+                       <div className="fw-bold text-white">{user?.fullName}</div>
+                       <div className="small text-muted">{user?.role}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -105,25 +129,43 @@ const Payments = () => {
         )}
 
         <div className="recent-section">
-          <h3 className="section-title">Transactions</h3>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+             <h3 className="section-title m-0">Transactions</h3>
+             <Badge bg="dark" className="text-info border border-secondary px-3 py-2">
+               Showcasing {filteredPayments.length} results
+             </Badge>
+          </div>
+          
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
             <div className="table-header-row payment-table-grid" style={{ minWidth: '1100px' }}>
-              <div className="th-cell">TRANSACTION ID</div>
+              <div className="th-cell">
+                ID <ColumnFilter column="transactionId" onFilterChange={handleFilterChange} placeholder="TX ID" />
+              </div>
               <div className="th-cell">AMOUNT</div>
-              <div className="th-cell">METHOD</div>
+              <div className="th-cell">
+                METHOD <ColumnFilter column="method" onFilterChange={handleFilterChange} placeholder="Method" />
+              </div>
               <div className="th-cell">DATE</div>
               <div className="th-cell">TIME</div>
-              <div className="th-cell text-center">STATUS</div>
+              <div className="th-cell text-center">
+                STATUS
+                <ColumnFilter 
+                  column="status" 
+                  onFilterChange={handleFilterChange} 
+                  placeholder="Status" 
+                  options={[{label: 'Completed', value: 'COMPLETED'}, {label: 'Pending', value: 'PENDING'}]}
+                />
+              </div>
             </div>
 
             {isPaymentsLoading ? (
               <div className="text-center my-5"><Spinner animation="border" variant="info" /></div>
             ) : paymentsError ? (
               <Alert variant="danger" className="m-3">Error loading payments: {paymentsError.message}</Alert>
-            ) : paymentsData?.content?.length === 0 ? (
-              <div className="p-4 text-center text-muted">No transactions found.</div>
+            ) : filteredPayments.length === 0 ? (
+              <div className="p-4 text-center text-muted">No matching transactions found.</div>
             ) : (
-              paymentsData?.content?.map((payment, index) => (
+              filteredPayments.map((payment, index) => (
                 <motion.div 
                   key={payment.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -132,7 +174,7 @@ const Payments = () => {
                   className="table-data-row align-items-center payment-table-grid"
                   style={{ minWidth: '1100px' }}
                 >
-                  <div className="td-cell fw-bold text-white" title={payment.paypalOrderId || payment.paymentId || payment.id}>
+                  <div className="td-cell fw-bold text-white px-2" title={payment.paypalOrderId || payment.paymentId || payment.id}>
                     {payment.paypalOrderId || (payment.paymentId ? payment.paymentId : 'N/A')}
                   </div>
                   <div className="td-cell">{payment.amount} €</div>
@@ -148,27 +190,6 @@ const Payments = () => {
               ))
             )}
           </div>
-          
-          {/* Pagination Controls */}
-          {paymentsData && paymentsData.totalPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center mt-3">
-              <Button 
-                variant="outline-info" 
-                disabled={paymentsData.first} 
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-white">Page {page + 1} of {paymentsData.totalPages}</span>
-              <Button 
-                variant="outline-info" 
-                disabled={paymentsData.last} 
-                onClick={() => setPage(p => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>

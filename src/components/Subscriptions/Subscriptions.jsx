@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Form, Modal } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions, useCreateManualSubscription, useDeleteSubscription } from '../../hooks/useSubscriptions';
 import { useAuthContext } from '../../contexts/AuthContext';
+import ColumnFilter from '../Shared/ColumnFilter';
 import '../Dashboard/Dashboard.css';
 
 const Subscriptions = () => {
@@ -12,7 +13,7 @@ const Subscriptions = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [page, setPage] = useState(0);
-  const size = 10;
+  const size = 100;
   
   const { data: subsData, isLoading, error } = useSubscriptions(page, size);
   const createSubMutation = useCreateManualSubscription();
@@ -20,6 +21,28 @@ const Subscriptions = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [newSub, setNewSub] = useState({ deviceId: '', plan: 'MONTHLY' });
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    deviceId: '',
+    plan: '',
+    status: ''
+  });
+
+  const handleFilterChange = (column, value) => {
+    setFilters(prev => ({ ...prev, [column]: value }));
+  };
+
+  const filteredSubs = useMemo(() => {
+    if (!subsData?.content) return [];
+    return subsData.content.filter(sub => {
+      return (
+        sub.deviceId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
+        (filters.plan === '' || sub.plan === filters.plan) &&
+        (filters.status === '' || sub.status === filters.status)
+      );
+    });
+  }, [subsData, filters]);
 
   const handleCreate = (e) => {
     e.preventDefault();
@@ -39,7 +62,6 @@ const Subscriptions = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Sidebar - Reused layout structure */}
       <div className="glass-sidebar">
         <div className="logo-box">WP</div>
         <nav className="nav-links">
@@ -65,7 +87,7 @@ const Subscriptions = () => {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
                 <Image 
-                  src="https://ui-avatars.com/api/?name=Admin&background=E50914&color=fff" 
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
                   className="admin-avatar m-0" 
                   roundedCircle
                 />
@@ -80,8 +102,8 @@ const Subscriptions = () => {
                     className="profile-menu"
                   >
                     <div className="px-3 py-2">
-                      <div className="fw-bold text-white">{user?.fullName || 'Admin'}</div>
-                      <div className="small text-muted">{user?.role}</div>
+                       <div className="fw-bold text-white">{user?.fullName}</div>
+                       <div className="small text-muted">{user?.role}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -106,24 +128,48 @@ const Subscriptions = () => {
         </div>
 
         <div className="recent-section">
-          <h3 className="section-title">Subscription List</h3>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+             <h3 className="section-title m-0">Subscription List</h3>
+             <Badge bg="dark" className="text-info border border-secondary px-3 py-2">
+               Found {filteredSubs.length} subs
+             </Badge>
+          </div>
+
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
             <div className="table-header-row subs-table-grid" style={{ minWidth: '1000px' }}>
-              <div className="th-cell">DEVICE ID</div>
-              <div className="th-cell">PLAN</div>
+              <div className="th-cell">
+                DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
+              </div>
+              <div className="th-cell">
+                PLAN 
+                <ColumnFilter 
+                  column="plan" 
+                  onFilterChange={handleFilterChange} 
+                  placeholder="Plan" 
+                  options={[{label: 'Monthly', value: 'MONTHLY'}, {label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'}]}
+                />
+              </div>
               <div className="th-cell">START DATE</div>
               <div className="th-cell">END DATE</div>
-              <div className="th-cell text-center">STATUS</div>
+              <div className="th-cell text-center">
+                STATUS
+                <ColumnFilter 
+                  column="status" 
+                  onFilterChange={handleFilterChange} 
+                  placeholder="Status" 
+                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Expired', value: 'EXPIRED'}]}
+                />
+              </div>
             </div>
 
             {isLoading ? (
               <div className="text-center my-5"><Spinner animation="border" variant="info" /></div>
             ) : error ? (
               <Alert variant="danger" className="m-3">Error loading subscriptions: {error.message}</Alert>
-            ) : subsData?.content?.length === 0 ? (
-              <div className="p-4 text-center text-muted">No subscriptions found.</div>
+            ) : filteredSubs.length === 0 ? (
+              <div className="p-4 text-center text-muted">No matching subscriptions found.</div>
             ) : (
-              subsData?.content?.map((sub, index) => (
+              filteredSubs.map((sub, index) => (
                 <motion.div 
                   key={sub.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -132,7 +178,7 @@ const Subscriptions = () => {
                   className="table-data-row align-items-center subs-table-grid"
                   style={{ minWidth: '1000px' }}
                 >
-                  <div className="td-cell fw-bold text-white" title={sub.deviceId}>
+                  <div className="td-cell fw-bold text-white px-2" title={sub.deviceId}>
                     {sub.deviceId}
                   </div>
                   <div className="td-cell">{sub.plan}</div>
@@ -147,31 +193,9 @@ const Subscriptions = () => {
               ))
             )}
           </div>
-          
-          {/* Pagination Controls */}
-          {subsData && subsData.totalPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center mt-3">
-              <Button 
-                variant="outline-info" 
-                disabled={subsData.first} 
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-white">Page {page + 1} of {subsData.totalPages}</span>
-              <Button 
-                variant="outline-info" 
-                disabled={subsData.last} 
-                onClick={() => setPage(p => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Manual Subscription Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered className="dark-modal">
         <Modal.Header closeButton className="border-secondary bg-dark text-white">
           <Modal.Title>Manual Subscription</Modal.Title>

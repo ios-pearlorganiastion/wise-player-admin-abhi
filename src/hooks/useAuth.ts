@@ -21,18 +21,27 @@ export const useLogin = () => {
 // Setup flow removed as per user request
 
 export const useInviteAdmin = () => {
-  return useMutation<{ token: string; inviteUrl: string }, Error, { email: string }>({
+  return useMutation<{ token: string; inviteUrl: string }, any, { email: string }>({
     mutationFn: async (data) => {
-      const response = await apiClient.post(AUTH_ENDPOINTS.INVITE, data);
-      return response.data;
+      try {
+        const response = await apiClient.post(AUTH_ENDPOINTS.INVITE, data);
+        return response.data;
+      } catch (err: any) {
+        throw new Error(err.response?.data?.message || "Failed to send invitation.");
+      }
     },
   });
 };
 
 export const useCompleteSetup = () => {
-  return useMutation<void, Error, { token: string; password: string; fullName: string }>({
+  return useMutation<void, any, { token: string; password: string; fullName: string }>({
     mutationFn: async (data) => {
-      await apiClient.post(AUTH_ENDPOINTS.COMPLETE_SETUP, data);
+      try {
+        await apiClient.post(AUTH_ENDPOINTS.COMPLETE_SETUP, data);
+      } catch (err: any) {
+        throw new Error(err.response?.data?.message || "Failed to complete setup.");
+      }
     },
   });
 };
+
