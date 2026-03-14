@@ -148,6 +148,12 @@
   transition: 0.3s;
 }
 
+.td-cell {
+  word-break: break-all;
+  padding: 0 10px;
+}
+
+
 .subs-table-grid:hover {
   background: rgba(255, 255, 255, 0.05); /* Slightly darker for clarity */
 }

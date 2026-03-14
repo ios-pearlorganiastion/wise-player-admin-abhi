@@ -2,11 +2,12 @@
   position: relative;
   display: inline-flex;
   margin-left: 8px;
+  flex-shrink: 0;
 }
 
 .filter-trigger {
   cursor: pointer;
-  color: #555;
+  color: #888;
   transition: 0.3s;
   position: relative;
   display: flex;
@@ -19,6 +20,7 @@
 .filter-trigger:hover, .filter-trigger.active {
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
+  filter: drop-shadow(0 0 8px #E50914);
 }
 
 .filter-trigger.active {
@@ -135,4 +137,10 @@
   background: rgba(229, 9, 20, 0.1);
   color: #E50914;
   font-weight: 600;
+}
+
+.filter-dropdown.align-right {
+  left: auto;
+  right: 0;
+  transform: none;
 }

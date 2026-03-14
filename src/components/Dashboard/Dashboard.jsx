@@ -15,8 +15,8 @@ const Dashboard = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats();
   // Fetch a small chunk for "recent"
-  const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 50); // Fetch more for filtering
-
+  const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 10);
+  
   // Filter states
   const [filters, setFilters] = useState({
     deviceId: '',
@@ -137,11 +137,8 @@ const Dashboard = () => {
 
         {/* Table Section */}
         <div className="recent-section">
-          <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="mb-3">
              <h3 className="section-title m-0">Recent Subscriptions</h3>
-             <Badge bg="dark" className="text-muted border border-secondary px-3 py-2">
-               Top {filteredSubs.length} results
-             </Badge>
           </div>
           
           <div className="custom-table-wrapper">
@@ -155,7 +152,7 @@ const Dashboard = () => {
                   column="plan" 
                   onFilterChange={handleFilterChange} 
                   placeholder="Plan" 
-                  options={[{label: 'Monthly', value: 'MONTHLY'}, {label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'}]}
+                  options={[{label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'},{label: 'Trial', value: 'TRIAL'}]}
                 />
               </div>
               <div className="th-cell">START DATE</div>
@@ -166,7 +163,8 @@ const Dashboard = () => {
                   column="status" 
                   onFilterChange={handleFilterChange} 
                   placeholder="Status" 
-                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Expired', value: 'EXPIRED'}]}
+                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Trial', value: 'TRIAL'}, {label: 'Expired', value: 'EXPIRED'}, {label: 'Cancelled', value: 'CANCELLED'}]}
+                  alignRight
                 />
               </div>
             </div>

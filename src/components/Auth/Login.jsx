@@ -7,7 +7,6 @@ import { useLogin } from '../../hooks/useAuth';
 import './Auth.css';
 
 const Login = () => {
-  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +20,7 @@ const Login = () => {
       { username, password },
       {
         onSuccess: () => {
-          navigate('/dashboard');
+          window.location.href = '/dashboard';
         },
         onError: (err) => {
           setError(err.response?.data?.message || err.message || "Invalid credentials.");

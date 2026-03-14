@@ -52,7 +52,7 @@ const AdminManagement = () => {
             </div>
 
             {error && <Alert variant="danger" className="custom-alert">{error}</Alert>}
-            {success && <Alert variant="success" className="custom-alert text-break">{success}</Alert>}
+            {success && <Alert variant="success" className="custom-alert-success text-break">{success}</Alert>}
 
             <Form onSubmit={handleInvite}>
               <Form.Group className="mb-4 custom-input-group">

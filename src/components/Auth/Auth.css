@@ -203,6 +203,14 @@
   border-radius: 10px;
 }
 
+.custom-alert-success {
+  background: rgba(40, 167, 69, 0.2) !important;
+  border: 1px solid #28a745 !important;
+  color: #a2f2b1 !important;
+  font-size: 0.8rem;
+  border-radius: 10px;
+}
+
 .success-btn {
   background: linear-gradient(45deg, #00b09b, #96c93d) !important;
   box-shadow: 0 0 20px rgba(0, 176, 155, 0.4) !important;

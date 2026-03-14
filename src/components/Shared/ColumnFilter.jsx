@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiSearch, FiX, FiFilter } from 'react-icons/fi';
 import './ColumnFilter.css';
 
-const ColumnFilter = ({ column, onFilterChange, placeholder, options }) => {
+const ColumnFilter = ({ column, onFilterChange, placeholder, options, alignRight }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState('');
 
@@ -33,7 +33,7 @@ const ColumnFilter = ({ column, onFilterChange, placeholder, options }) => {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="filter-dropdown glass-card"
+            className={`filter-dropdown glass-card ${alignRight ? 'align-right' : ''}`}
           >
             <div className="filter-header">
               <span className="small fw-bold text-muted">Filter {placeholder}</span>

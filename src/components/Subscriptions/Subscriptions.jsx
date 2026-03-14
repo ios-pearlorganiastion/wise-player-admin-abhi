@@ -13,14 +13,14 @@ const Subscriptions = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [page, setPage] = useState(0);
-  const size = 100;
+  const size = 20;
   
   const { data: subsData, isLoading, error } = useSubscriptions(page, size);
   const createSubMutation = useCreateManualSubscription();
   const deleteSubMutation = useDeleteSubscription();
 
   const [showModal, setShowModal] = useState(false);
-  const [newSub, setNewSub] = useState({ deviceId: '', plan: 'MONTHLY' });
+  const [newSub, setNewSub] = useState({ deviceId: '', plan: 'ANNUAL' });
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -49,7 +49,7 @@ const Subscriptions = () => {
     createSubMutation.mutate(newSub, {
       onSuccess: () => {
         setShowModal(false);
-        setNewSub({ deviceId: '', plan: 'MONTHLY' });
+        setNewSub({ deviceId: '', plan: '' });
       }
     });
   };
@@ -128,11 +128,8 @@ const Subscriptions = () => {
         </div>
 
         <div className="recent-section">
-          <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="mb-3">
              <h3 className="section-title m-0">Subscription List</h3>
-             <Badge bg="dark" className="text-info border border-secondary px-3 py-2">
-               Found {filteredSubs.length} subs
-             </Badge>
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
@@ -146,7 +143,7 @@ const Subscriptions = () => {
                   column="plan" 
                   onFilterChange={handleFilterChange} 
                   placeholder="Plan" 
-                  options={[{label: 'Monthly', value: 'MONTHLY'}, {label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'}]}
+                  options={[{label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'},{label: 'TRIAL', value: 'TRIAL'}]}
                 />
               </div>
               <div className="th-cell">START DATE</div>
@@ -157,7 +154,8 @@ const Subscriptions = () => {
                   column="status" 
                   onFilterChange={handleFilterChange} 
                   placeholder="Status" 
-                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Expired', value: 'EXPIRED'}]}
+                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Trial', value: 'TRIAL'}, {label: 'Expired', value: 'EXPIRED'}, {label: 'Cancelled', value: 'CANCELLED'}]}
+                  alignRight
                 />
               </div>
             </div>
@@ -193,6 +191,27 @@ const Subscriptions = () => {
               ))
             )}
           </div>
+          
+          {/* Pagination Controls */}
+          {subsData && subsData.totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-3">
+              <Button 
+                variant="outline-info" 
+                disabled={subsData.first} 
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+              >
+                Previous
+              </Button>
+              <span className="text-white">Page {page + 1} of {subsData.totalPages}</span>
+              <Button 
+                variant="outline-info" 
+                disabled={subsData.last} 
+                onClick={() => setPage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

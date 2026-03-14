@@ -13,7 +13,7 @@ const Devices = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [page, setPage] = useState(0);
-  const size = 100; // Increase size for client-side filtering demo or implement server-side
+  const size = 20; // Increase size for client-side filtering demo or implement server-side
   
   const { data: devicesData, isLoading, error } = useDevices(page, size);
   const updateStatusMutation = useUpdateDeviceStatus();
@@ -124,7 +124,7 @@ const Devices = () => {
                   column="status" 
                   onFilterChange={handleFilterChange} 
                   placeholder="Status" 
-                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Blocked', value: 'BLOCKED'}]}
+                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'INACTIVE', value: 'INACTIVE'}]}
                 />
               </div>
               <div className="th-cell">
@@ -187,6 +187,27 @@ const Devices = () => {
               ))
             )}
           </div>
+          
+          {/* Pagination Controls */}
+          {devicesData && devicesData.totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-3">
+              <Button 
+                variant="outline-info" 
+                disabled={devicesData.first} 
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+              >
+                Previous
+              </Button>
+              <span className="text-white">Page {page + 1} of {devicesData.totalPages}</span>
+              <Button 
+                variant="outline-info" 
+                disabled={devicesData.last} 
+                onClick={() => setPage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

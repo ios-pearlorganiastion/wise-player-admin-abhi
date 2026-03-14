@@ -13,7 +13,7 @@ const Payments = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [page, setPage] = useState(0);
-  const size = 100;
+  const size = 20;
   
   const { data: paymentsData, isLoading: isPaymentsLoading, error: paymentsError } = usePayments(page, size);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = usePaymentStats();
@@ -153,7 +153,15 @@ const Payments = () => {
                   column="status" 
                   onFilterChange={handleFilterChange} 
                   placeholder="Status" 
-                  options={[{label: 'Completed', value: 'COMPLETED'}, {label: 'Pending', value: 'PENDING'}]}
+                  options={[
+                    {label: 'Pending', value: 'PENDING'}, 
+                    {label: 'Success', value: 'SUCCESS'}, 
+                    {label: 'Failed', value: 'FAILED'}, 
+                    {label: 'Refunded', value: 'REFUNDED'}, 
+                    {label: 'Disputed', value: 'DISPUTED'}, 
+                    {label: 'Reversed', value: 'REVERSED'}
+                  ]}
+                  alignRight
                 />
               </div>
             </div>
@@ -190,6 +198,27 @@ const Payments = () => {
               ))
             )}
           </div>
+          
+          {/* Pagination Controls */}
+          {paymentsData && paymentsData.totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-3">
+              <Button 
+                variant="outline-info" 
+                disabled={paymentsData.first} 
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+              >
+                Previous
+              </Button>
+              <span className="text-white">Page {page + 1} of {paymentsData.totalPages}</span>
+              <Button 
+                variant="outline-info" 
+                disabled={paymentsData.last} 
+                onClick={() => setPage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
