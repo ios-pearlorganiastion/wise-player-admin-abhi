@@ -85,7 +85,7 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.stat-label { color: #888; font-size: 0.9rem; }
+.stat-label { color: #ffffff; font-size: 0.9rem; }
 .stat-number { font-weight: 800; margin-top: 5px; }
 .stat-icon-box { font-size: 1.8rem; opacity: 0.8; }
 

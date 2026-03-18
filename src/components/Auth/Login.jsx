@@ -10,6 +10,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
   const loginMutation = useLogin();
 
   const handleLogin = (e) => {
@@ -20,7 +21,7 @@ const Login = () => {
       { username, password },
       {
         onSuccess: () => {
-          window.location.href = '/dashboard';
+          navigate('/dashboard');
         },
         onError: (err) => {
           setError(err.response?.data?.message || err.message || "Invalid credentials.");

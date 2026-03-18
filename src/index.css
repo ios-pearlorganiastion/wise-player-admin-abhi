@@ -1,0 +1,13 @@
+.text-muted {
+    --bs-text-opacity: 1 !important;
+    color: #ffffff !important;
+}
+
+.btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+}
+
+/* Global override for specific semi-transparent black if used in inline styles or other places */
+[style*="color: #0000003d"], [style*="color:#0000003d"] {
+    color: #ffffff !important;
+}

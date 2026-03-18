@@ -8,7 +8,7 @@ import { apiClient } from '../../api/axios';
 import { AUTH_ENDPOINTS } from '../../api/endpoints';
 import './Auth.css';
 
-const AdminSetup = () => {
+const AdminSetup: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
@@ -18,25 +18,30 @@ const AdminSetup = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // Track if the initial token validation failed fundamentally
+  const [isTokenInvalid, setIsTokenInvalid] = useState(false);
 
-  const completeSetupMutation = useCompleteSetup();
+  // useCompleteSetup is a custom hook and typically returns a mutation object.
+  const completeSetupMutation: any = useCompleteSetup();
   const [isValidating, setIsValidating] = useState(true);
 
   useEffect(() => {
     const verifyToken = async () => {
       if (!token) {
         setError("Invalid or missing invitation token.");
+        setIsTokenInvalid(true);
         setIsValidating(false);
         return;
       }
 
       try {
         setIsValidating(true);
-        // We call the API to verify if the token is valid/unused before showing the form
         await apiClient.get(`${AUTH_ENDPOINTS.VERIFY_INVITE}?token=${token}`);
         setIsValidating(false);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.response?.data?.message || "This invitation link is invalid or has expired.");
+        setIsTokenInvalid(true);
         setIsValidating(false);
       }
     };
@@ -44,7 +49,7 @@ const AdminSetup = () => {
     verifyToken();
   }, [token]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -65,8 +70,8 @@ const AdminSetup = () => {
           setSuccess("Account activated successfully! Redirecting to login...");
           setTimeout(() => navigate('/'), 3000);
         },
-        onError: (err) => {
-          setError(err.message || "Failed to complete setup.");
+        onError: (err: any) => {
+           setError(err.response?.data?.message || err.message || "Failed to complete setup.");
         }
       }
     );
@@ -84,7 +89,7 @@ const AdminSetup = () => {
     );
   }
 
-  if (error && !success && !token) {
+  if (isTokenInvalid) {
     return (
       <div className="auth-container d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
         <Alert variant="danger" className="text-center custom-alert" style={{ maxWidth: '400px', padding: '2rem' }}>

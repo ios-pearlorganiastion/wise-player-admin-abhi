@@ -22,9 +22,12 @@ const AdminManagement = () => {
       { email },
       {
         onSuccess: () => {
-          setSuccess("Invitation sent!");
+          setSuccess("Invitation sent! Redirecting...");
           setEmail('');
-          // Removed the timeout to keep the green state until manual reset or navigation
+          // Redirect back to dashboard after 2 seconds
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
         },
         onError: (err) => {
           setError(err.message || "Failed to send invitation.");
