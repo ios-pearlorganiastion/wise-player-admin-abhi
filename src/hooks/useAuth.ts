@@ -13,7 +13,8 @@ export const useLogin = () => {
       return data;
     },
     onSuccess: (data) => {
-      login(data.token);
+      const { token, ...userData } = data;
+      login(token, userData);
     },
   });
 };

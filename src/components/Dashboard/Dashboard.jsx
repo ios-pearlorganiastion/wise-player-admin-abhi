@@ -12,6 +12,11 @@ import './Dashboard.css';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthContext();
+  const displayRole = user?.role === 'SUPER_ADMIN' 
+    ? 'Super_Admin' 
+    : user?.role 
+      ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase().replace('_', ' ') 
+      : 'Admin';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats();
   // Fetch a small chunk for "recent"
@@ -66,7 +71,7 @@ const Dashboard = () => {
         <header className="dash-header">
           <div className="welcome-text">
             <h1>
-              {user?.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin'}{' '}
+              {displayRole}{' '}
               <span className="highlight">Dashboard</span>
             </h1>
             <p>Real-time analytics & subscriptions</p>
@@ -96,7 +101,7 @@ const Dashboard = () => {
                   >
                     <div className="px-3 py-2">
                        <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-muted">{user?.role}</div>
+                       <div className="small text-white">{displayRole}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -187,7 +192,7 @@ const Dashboard = () => {
                   <div className="td-cell">
                     <div className="movie-info px-2">
                       <FiPlay className="text-info me-2" />
-                      <span className="text-truncate fw-bold text-white" style={{maxWidth: '120px'}} title={sub.deviceId}>
+                      <span className="fw-bold text-white" title={sub.deviceId}>
                         {sub.deviceId}
                       </span>
                     </div>
