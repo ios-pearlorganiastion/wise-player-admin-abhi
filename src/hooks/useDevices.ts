@@ -28,7 +28,7 @@ export const useDevice = (deviceId: string) => {
 
 export const useUpdateDeviceStatus = () => {
   const queryClient = useQueryClient();
-  return useMutation<Device, Error, { deviceId: string; status: "ACTIVE" | "BLOCKED" }>({
+  return useMutation<Device, Error, { deviceId: string; status: "ACTIVE" | "INACTIVE" }>({
     mutationFn: async ({ deviceId, status }) => {
       const { data } = await apiClient.patch<Device>(
         DEVICES_ENDPOINTS.UPDATE_STATUS(deviceId),

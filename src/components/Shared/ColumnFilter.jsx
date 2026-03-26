@@ -36,7 +36,7 @@ const ColumnFilter = ({ column, onFilterChange, placeholder, options, alignRight
             className={`filter-dropdown glass-card ${alignRight ? 'align-right' : ''}`}
           >
             <div className="filter-header">
-              <span className="small fw-bold text-muted">Filter {placeholder}</span>
+              <span className="small fw-bold text-white">Filter {placeholder}</span>
               <FiX className="close-filter" onClick={() => setIsOpen(false)} />
             </div>
 

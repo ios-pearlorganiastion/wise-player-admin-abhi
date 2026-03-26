@@ -1,0 +1,311 @@
+import React, { useState } from 'react';
+import { Row, Col, Badge, Image, Spinner, Alert, Button, Table, Modal, Form } from 'react-bootstrap';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiTag, FiPlus, FiEdit2, FiPower, FiActivity, FiLogOut, FiPackage } from 'react-icons/fi';
+import Sidebar from '../Shared/Sidebar';
+import { usePlans, useCreatePlan, useUpdatePlan, useTogglePlanStatus } from '../../hooks/usePlans';
+import { useAuthContext } from '../../contexts/AuthContext';
+import ColumnFilter from '../Shared/ColumnFilter';
+import Pagination from '../Shared/Pagination';
+import '../Dashboard/Dashboard.css';
+
+const Plans = () => {
+  const { user, logout } = useAuthContext();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [page, setPage] = useState(0);
+  const size = 20;
+  const [planFilter, setPlanFilter] = useState('');
+
+  const { data: plansData, isLoading, error } = usePlans(page, size);
+
+  const filteredPlans = React.useMemo(() => {
+    if (!plansData?.content) return [];
+    return plansData.content.filter(plan => 
+      !planFilter || plan.name?.toLowerCase().includes(planFilter.toLowerCase())
+    );
+  }, [plansData, planFilter]);
+  const createMutation = useCreatePlan();
+  const updateMutation = useUpdatePlan();
+  const toggleStatusMutation = useTogglePlanStatus();
+
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    durationDays: '',
+    price: '',
+    currency: 'EUR',
+    description: ''
+  });
+
+  const handleOpenModal = (plan = null) => {
+    if (plan) {
+      setEditingPlan(plan);
+      setFormData({
+        name: plan.name,
+        durationDays: plan.durationDays,
+        price: plan.price,
+        currency: plan.currency || 'EUR',
+        description: plan.description || ''
+      });
+    } else {
+      setEditingPlan(null);
+      setFormData({
+        name: '',
+        durationDays: '',
+        price: '',
+        currency: 'EUR',
+        description: ''
+      });
+    }
+    setShowModal(true);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      ...formData,
+      durationDays: parseInt(formData.durationDays),
+      price: parseFloat(formData.price)
+    };
+
+    if (editingPlan) {
+      updateMutation.mutate({ id: editingPlan.id, plan: payload }, {
+        onSuccess: () => setShowModal(false)
+      });
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => setShowModal(false)
+      });
+    }
+  };
+
+  const handleToggleStatus = (id) => {
+    if (window.confirm("Are you sure you want to toggle this plan's status?")) {
+      toggleStatusMutation.mutate(id);
+    }
+  };
+
+  return (
+    <div className="dashboard-container">
+      <Sidebar activePage="plans" />
+      <div className="content-area">
+        <header className="dash-header">
+          <div className="welcome-text">
+            <h1>Subscription <span className="highlight">Plans</span></h1>
+            <p>Define and manage your service offerings</p>
+          </div>
+          <div className="profile-section">
+            <div className="notif-bell"><FiActivity /></div>
+            
+            <div className="profile-dropdown-container">
+              <div 
+                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+              >
+                <Image 
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
+                  roundedCircle 
+                  className="admin-avatar m-0" 
+                />
+              </div>
+
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="profile-menu"
+                  >
+                    <div className="px-3 py-2">
+                       <div className="fw-bold text-white">{user?.fullName}</div>
+                       <div className="small text-white">{user?.role}</div>
+                    </div>
+                    <div className="profile-menu-divider"></div>
+                    <div className="profile-menu-item logout" onClick={logout}>
+                      <FiLogOut /> Logout
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </header>
+
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+           <div className="d-flex align-items-center">
+              <FiPackage className="text-info me-2 fs-3" />
+              <h3 className="section-title m-0">Available Plans</h3>
+           </div>
+           <Button 
+            variant="danger" 
+            className="d-flex align-items-center gap-2 fw-bold px-4"
+            style={{ borderRadius: '12px' }}
+            onClick={() => handleOpenModal()}
+           >
+             <FiPlus /> Create New Plan
+           </Button>
+        </div>
+
+        <div className="recent-section">
+          {isLoading ? (
+            <div className="text-center py-5"><Spinner animation="border" variant="danger" /></div>
+          ) : error ? (
+            <Alert variant="danger">Error loading plans: {error.message}</Alert>
+          ) : (
+            <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
+              <div className="table-header-row" style={{ minWidth: '900px', gridTemplateColumns: '1.5fr 1fr 1fr 2fr 1fr 1fr' }}>
+                <div className="th-cell">
+                  PLAN NAME
+                  <ColumnFilter column="plan" onFilterChange={(_, val) => setPlanFilter(val)} placeholder="Plan Name" />
+                </div>
+                <div className="th-cell">DURATION</div>
+                <div className="th-cell">PRICE</div>
+                <div className="th-cell">DESCRIPTION</div>
+                <div className="th-cell text-center">STATUS</div>
+                <div className="th-cell text-center">ACTIONS</div>
+              </div>
+
+              {filteredPlans.map((plan, index) => (
+                <motion.div 
+                  key={plan.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="table-data-row align-items-center"
+                  style={{ minWidth: '900px', gridTemplateColumns: '1.5fr 1fr 1fr 2fr 1fr 1fr' }}
+                >
+                  <div className="td-cell fw-bold text-white px-2">
+                    <FiTag className="text-danger me-2" />
+                    {plan.name}
+                  </div>
+                  <div className="td-cell text-white-50">{plan.durationDays} Days</div>
+                  <div className="td-cell">
+                    <span className="text-info fw-bold">{plan.price}</span> {plan.currency}
+                  </div>
+                  <div className="td-cell text-white-50 small pe-3">{plan.description}</div>
+                  <div className="td-cell text-center">
+                    <Badge bg={plan.active ? "success" : "secondary"} className="status-pill">
+                      {plan.active ? "ACTIVE" : "INACTIVE"}
+                    </Badge>
+                  </div>
+                  <div className="td-cell text-center">
+                    <Button variant="outline-info" size="sm" className="me-2" onClick={() => handleOpenModal(plan)}>
+                      <FiEdit2 />
+                    </Button>
+                    <Button 
+                      variant={plan.active ? "outline-danger" : "outline-success"} 
+                      size="sm"
+                      onClick={() => handleToggleStatus(plan.id)}
+                      disabled={toggleStatusMutation.isPending}
+                    >
+                      <FiPower />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+              
+              {filteredPlans.length === 0 && (
+                <div className="p-5 text-center text-white-50">No matching plans found.</div>
+              )}
+            </div>
+          )}
+
+          <Pagination 
+            currentPage={page} 
+            totalPages={plansData?.totalPages || 0} 
+            onPageChange={setPage} 
+          />
+        </div>
+      </div>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="dark-modal">
+        <Modal.Header closeButton className="bg-dark text-white border-secondary">
+          <Modal.Title>{editingPlan ? 'Edit Plan' : 'Create New Plan'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="bg-dark text-white p-4">
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label className="text-white-50 small">Plan Name</Form.Label>
+              <Form.Control 
+                type="text" 
+                required 
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
+                placeholder="e.g. Annual Subscription"
+                className="bg-secondary text-white border-0"
+              />
+            </Form.Group>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="text-white-50 small">Duration (Days)</Form.Label>
+                  <Form.Control 
+                    type="number" 
+                    required 
+                    value={formData.durationDays}
+                    onChange={e => setFormData({...formData, durationDays: e.target.value})}
+                    placeholder="e.g. 365"
+                    className="bg-secondary text-white border-0"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="text-white-50 small">Price</Form.Label>
+                  <div className="d-flex gap-2">
+                    <Form.Control 
+                      type="number" 
+                      step="0.01"
+                      required 
+                      value={formData.price}
+                      onChange={e => setFormData({...formData, price: e.target.value})}
+                      placeholder="59.99"
+                      className="bg-secondary text-white border-0"
+                    />
+                    <Form.Select 
+                      value={formData.currency}
+                      onChange={e => setFormData({...formData, currency: e.target.value})}
+                      className="bg-secondary text-white border-0"
+                      style={{ width: '100px' }}
+                    >
+                      <option value="EUR">EUR</option>
+                      <option value="USD">USD</option>
+                      <option value="GBP">GBP</option>
+                    </Form.Select>
+                  </div>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-4">
+              <Form.Label className="text-white-50 small">Description</Form.Label>
+              <Form.Control 
+                as="textarea" 
+                rows={3} 
+                value={formData.description}
+                onChange={e => setFormData({...formData, description: e.target.value})}
+                placeholder="Briefly describe what this plan offers..."
+                className="bg-secondary text-white border-0"
+              />
+            </Form.Group>
+
+            <Button 
+              variant="danger" 
+              type="submit" 
+              className="w-100 py-2 fw-bold fs-5"
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {createMutation.isPending || updateMutation.isPending ? <Spinner animation="border" size="sm" /> : editingPlan ? 'Update Plan' : 'Create Plan'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    </div>
+  );
+};
+
+export default Plans;

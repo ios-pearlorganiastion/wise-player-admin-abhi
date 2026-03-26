@@ -26,7 +26,41 @@ export const PAYMENTS_ENDPOINTS = {
 
 // Subscriptions Endpoints
 export const SUBSCRIPTIONS_ENDPOINTS = {
-  LIST: "/api/admin/subscriptions", // Append ?page=n&size=n
+  LIST: "/api/admin/subscriptions",
   MANUAL: "/api/admin/subscriptions/manual",
   DELETE: (subscriptionId: string) => `/api/admin/subscriptions/${subscriptionId}`,
+};
+
+// Reseller Management
+export const RESELLER_ENDPOINTS = {
+  LIST: "/api/admin/resellers",
+  GET_BY_ID: (id: string) => `/api/admin/resellers/${id}`,
+  TOGGLE_STATUS: (id: string) => `/api/admin/resellers/${id}/status`,
+  CREATE: "/api/reseller/register",
+  UPDATE: (id: string) => `/api/admin/resellers/${id}`,
+};
+
+// Plan Management
+export const PLAN_ENDPOINTS = {
+  CREATE: "/api/admin/plans",
+  LIST_ALL: "/api/admin/plans",
+  LIST_ACTIVE: "/api/admin/plans/active",
+  UPDATE: (id: string) => `/api/admin/plans/${id}`,
+  TOGGLE_STATUS: (id: string) => `/api/admin/plans/${id}/status`,
+};
+
+// Activation Requests
+export const ACTIVATION_ENDPOINTS = {
+  LIST: "/api/admin/activation-requests",
+  GET_BY_ID: (id: string) => `/api/admin/activation-requests/${id}`,
+  APPROVE: (id: string) => `/api/admin/activation-requests/${id}/approve`,
+  REJECT: (id: string) => `/api/admin/activation-requests/${id}/reject`,
+};
+
+// Reports
+export const REPORT_ENDPOINTS = {
+  REVENUE: "/api/admin/reports/revenue",
+  DEVICES: "/api/admin/reports/devices",
+  SUBSCRIPTIONS: "/api/admin/reports/subscriptions",
+  RESELLERS: "/api/admin/reports/resellers",
 };

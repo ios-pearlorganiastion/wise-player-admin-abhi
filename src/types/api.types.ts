@@ -35,6 +35,7 @@ export interface DashboardStats {
   blockedDevices: number;
   totalRevenue: number;
   activeSubscriptions: number;
+  pendingActivations?: number;
   // Note: Add precise fields based on actual API payload, using generic placeholders if needed
   [key: string]: number | string | boolean | undefined; 
 }
@@ -98,4 +99,74 @@ export interface Subscription {
 export interface ManualSubscriptionRequest {
   deviceId: string;
   plan: "ANNUAL" | "MONTHLY";
+}
+
+// Reseller Types
+export interface Reseller {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  role: string;
+  active: boolean;
+  createdAt: string;
+  totalUsers: number;
+}
+
+export interface ResellerCreateRequest {
+  username: string;
+  password: string;
+  fullName: string;
+  email?: string;
+}
+
+export interface ResellerUpdateRequest {
+  fullName?: string;
+  email?: string;
+  password?: string;
+}
+
+// Plan Types
+export interface Plan {
+  id: string;
+  name: string;
+  durationDays: number;
+  price: number;
+  currency: string;
+  description: string;
+  status: "ACTIVE" | "INACTIVE";
+}
+
+// Activation Request Types
+export interface ActivationRequest {
+  id: string;
+  deviceId: string;
+  planId: string;
+  planName: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  adminNotes?: string;
+  createdAt: string;
+  amount: number;
+  currency: string;
+}
+
+// Report Types
+export interface RevenueReport {
+  totalRevenue: number;
+  successfulPayments: number;
+  failedPayments: number;
+}
+
+export interface DeviceReport {
+  newDevices: number;
+}
+
+export interface SubscriptionReport {
+  newSubscriptions: number;
+}
+
+export interface ResellerReport {
+  resellerName: string;
+  totalActivations: number;
+  remainingCredits: number;
 }

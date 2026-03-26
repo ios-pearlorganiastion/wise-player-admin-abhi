@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePayments, usePaymentStats } from '../../hooks/usePayments';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
+import Sidebar from '../Shared/Sidebar';
 import '../Dashboard/Dashboard.css';
 
 const Payments = () => {
@@ -50,15 +51,7 @@ const Payments = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="glass-sidebar">
-        <div className="logo-box">WP</div>
-        <nav className="nav-links">
-          <div className="nav-item" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}><FiPlay /></div>
-          <div className="nav-item" onClick={() => navigate('/devices')} style={{cursor: 'pointer'}}><FiUsers /></div>
-          <div className="nav-item active"><FiDollarSign /></div>
-          <div className="nav-item" onClick={() => navigate('/subscriptions')} style={{cursor: 'pointer'}}><FiTrendingUp /></div>
-        </nav>
-      </div>
+      <Sidebar activePage="payments" />
 
       <div className="content-area">
         <header className="dash-header">
@@ -91,7 +84,7 @@ const Payments = () => {
                   >
                     <div className="px-3 py-2">
                        <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-muted">{user?.role}</div>
+                       <div className="small text-white">{user?.role}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -171,7 +164,7 @@ const Payments = () => {
             ) : paymentsError ? (
               <Alert variant="danger" className="m-3">Error loading payments: {paymentsError.message}</Alert>
             ) : filteredPayments.length === 0 ? (
-              <div className="p-4 text-center text-muted">No matching transactions found.</div>
+              <div className="p-4 text-center text-white">No matching transactions found.</div>
             ) : (
               filteredPayments.map((payment, index) => (
                 <motion.div 

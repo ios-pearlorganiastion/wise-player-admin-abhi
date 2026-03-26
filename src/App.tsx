@@ -9,6 +9,11 @@ import AdminManagement from './components/Auth/AdminManagement';
 import AdminSetup from './components/Auth/AdminSetup';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
+import Resellers from './components/Resellers/Resellers';
+import Plans from './components/Plans/Plans';
+import ActivationRequests from './components/RechargeRequests/RechargeRequests';
+import Reports from './components/Reports/Reports';
+import Users from './components/Users/Users';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -26,6 +31,11 @@ function App() {
               <Route path="/devices" element={<Devices />} />
               <Route path="/payments" element={<Payments />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
+              <Route path="/activation-requests" element={<ActivationRequests />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/plans" element={<Plans />} />
+              <Route path="/resellers" element={<Resellers />} />
               <Route path="/admin-management" element={<AdminManagement />} />
             </Route>
           </Routes>

@@ -116,7 +116,7 @@ const AdminSetup: React.FC = () => {
                 <FiShield style={{ fontSize: '3rem', color: 'var(--n-blue)' }} />
               </div>
               <h2 className="login-title">Complete Your Setup</h2>
-              <p className="text-muted">Set your password and account details to activate your admin account.</p>
+              <p className="text-white">Set your password and account details to activate your admin account.</p>
             </div>
 
             {error && <Alert variant="danger" className="custom-alert">{error}</Alert>}

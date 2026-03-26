@@ -51,7 +51,7 @@ const AdminManagement = () => {
                 <FiArrowLeft className="me-2" /> Back to Dashboard
               </Button>
               <h2 className="login-title text-start">Invite New Admin</h2>
-              <p className="text-muted">Enter the email of the person you want to invite as an administrator.</p>
+              <p className="text-white">Enter the email of the person you want to invite as an administrator.</p>
             </div>
 
             {error && <Alert variant="danger" className="custom-alert">{error}</Alert>}

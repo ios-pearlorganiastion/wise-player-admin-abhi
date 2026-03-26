@@ -1,0 +1,145 @@
+import React, { useState, useMemo } from 'react';
+import { Badge, Spinner, Alert, Button, Image } from 'react-bootstrap';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiUserCheck, FiActivity, FiLogOut, FiShield } from 'react-icons/fi';
+import { useDevices, useUpdateDeviceStatus } from '../../hooks/useDevices';
+import { useAuthContext } from '../../contexts/AuthContext';
+import ColumnFilter from '../Shared/ColumnFilter';
+import Pagination from '../Shared/Pagination';
+import Sidebar from '../Shared/Sidebar';
+import '../Dashboard/Dashboard.css';
+
+const Users = () => {
+  const { logout, user } = useAuthContext();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [page, setPage] = useState(0);
+  const size = 20;
+  const [accountFilter, setAccountFilter] = useState('');
+  
+  const { data: devicesData, isLoading, error } = useDevices(page, size);
+
+  const filteredDevices = useMemo(() => {
+    if (!devicesData?.content) return [];
+    return devicesData.content.filter(dev => 
+      !accountFilter || dev.deviceId?.toLowerCase().includes(accountFilter.toLowerCase())
+    );
+  }, [devicesData, accountFilter]);
+  const updateStatusMutation = useUpdateDeviceStatus();
+
+  return (
+    <div className="dashboard-container">
+      <Sidebar activePage="users" />
+
+      <div className="content-area">
+        <header className="dash-header">
+          <div className="welcome-text">
+            <h1>Platform <span className="highlight">Users</span></h1>
+            <p>Manage access levels and account status for all platform users</p>
+          </div>
+          <div className="profile-section">
+            <div className="profile-dropdown-container">
+              <div 
+                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+              >
+                <Image 
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
+                  roundedCircle 
+                  className="admin-avatar m-0" 
+                />
+              </div>
+
+               <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="profile-menu"
+                  >
+                    <div className="px-3 py-2">
+                       <div className="fw-bold text-white">{user?.fullName}</div>
+                       <div className="small text-white">{user?.role}</div>
+                    </div>
+                    <div className="profile-menu-divider"></div>
+                    <div className="profile-menu-item logout" onClick={logout}>
+                      <FiLogOut /> Logout
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </header>
+
+        <div className="recent-section mt-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h3 className="section-title m-0">User Accounts</h3>
+            <Badge bg="dark" className="text-info border border-secondary px-3 py-2">
+              Showing {devicesData?.content?.length || 0} users
+            </Badge>
+          </div>
+
+          <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
+            <div className="table-header-row user-table-grid" style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr' }}>
+              <div className="th-cell">
+                ACCOUNT ID
+                <ColumnFilter column="account" onFilterChange={(_, val) => setAccountFilter(val)} placeholder="Account ID" />
+              </div>
+              <div className="th-cell">REGISTERED ON</div>
+              <div className="th-cell text-center">STATUS</div>
+              <div className="th-cell text-center">ACTION</div>
+            </div>
+
+            {isLoading ? (
+              <div className="text-center my-5"><Spinner animation="border" variant="info" /></div>
+            ) : error ? (
+              <Alert variant="danger" className="m-3">Error loading users: {error.message}</Alert>
+            ) : devicesData?.content?.length === 0 ? (
+              <div className="p-4 text-center text-white">No users found.</div>
+            ) : filteredDevices.length === 0 ? (
+              <div className="p-4 text-center text-white">No users match your filters.</div>
+            ) : (
+              filteredDevices.map((dev, index) => (
+                <motion.div 
+                  key={dev.deviceId}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="table-data-row align-items-center user-table-grid"
+                  style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr' }}
+                >
+                  <div className="td-cell fw-bold text-white px-2" title={dev.deviceId}>{dev.deviceId}</div>
+                  <div className="td-cell text-white">{new Date(dev.registeredAt).toLocaleDateString()}</div>
+                  <div className="td-cell text-center">
+                    <Badge className={`status-pill ${dev.deviceStatus.toLowerCase()}`}>
+                      {dev.deviceStatus}
+                    </Badge>
+                  </div>
+                  <div className="td-cell text-center">
+                    <Button 
+                      variant={dev.deviceStatus === "ACTIVE" ? "outline-danger" : "outline-success"} 
+                      size="sm"
+                      onClick={() => updateStatusMutation.mutate({ deviceId: dev.deviceId, status: dev.deviceStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' })}
+                    >
+                      <FiShield className="me-1" />
+                      {dev.deviceStatus === "ACTIVE" ? "Deactivate" : "Activate"}
+                    </Button>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
+          
+          <Pagination 
+            currentPage={page} 
+            totalPages={devicesData?.totalPages || 0} 
+            onPageChange={setPage} 
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Users;

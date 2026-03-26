@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDevices, useUpdateDeviceStatus } from '../../hooks/useDevices';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
+import Sidebar from '../Shared/Sidebar';
 import '../Dashboard/Dashboard.css';
 
 const Devices = () => {
@@ -45,21 +46,13 @@ const Devices = () => {
   }, [devicesData, filters]);
 
   const handleStatusToggle = (deviceId, currentStatus) => {
-    const newStatus = currentStatus === "ACTIVE" ? "BLOCKED" : "ACTIVE";
+    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     updateStatusMutation.mutate({ deviceId, status: newStatus });
   };
 
   return (
     <div className="dashboard-container">
-      <div className="glass-sidebar">
-        <div className="logo-box">WP</div>
-        <nav className="nav-links">
-          <div className="nav-item" onClick={() => navigate('/dashboard')}><FiPlay /></div>
-          <div className="nav-item active"><FiUsers /></div>
-          <div className="nav-item" onClick={() => navigate('/payments')}><FiDollarSign /></div>
-          <div className="nav-item" onClick={() => navigate('/subscriptions')}><FiTrendingUp /></div>
-        </nav>
-      </div>
+      <Sidebar activePage="devices" />
 
       <div className="content-area">
         <header className="dash-header">
@@ -92,7 +85,7 @@ const Devices = () => {
                   >
                     <div className="px-3 py-2">
                        <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-muted">{user?.role}</div>
+                       <div className="small text-white">{user?.role}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -148,7 +141,7 @@ const Devices = () => {
             ) : error ? (
               <Alert variant="danger" className="m-3">Error loading devices: {error.message}</Alert>
             ) : filteredDevices.length === 0 ? (
-              <div className="p-4 text-center text-muted">No matching devices found.</div>
+              <div className="p-4 text-center text-white">No matching devices found.</div>
             ) : (
               filteredDevices.map((device, index) => (
                 <motion.div 
@@ -180,7 +173,7 @@ const Devices = () => {
                       onClick={() => handleStatusToggle(device.deviceId || device.id, device.deviceStatus || device.status)}
                     >
                       <FiShield className="me-1" />
-                      {(device.deviceStatus || device.status) === "ACTIVE" ? "Block" : "Activate"}
+                      {(device.deviceStatus || device.status) === "ACTIVE" ? "Deactivate" : "Activate"}
                     </Button>
                   </div>
                 </motion.div>

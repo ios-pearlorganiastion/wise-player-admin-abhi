@@ -10,38 +10,103 @@
 
 /* Sidebar Glass Effect */
 .glass-sidebar {
-  width: 90px;
-  background: rgba(20, 20, 20, 0.8);
-  backdrop-filter: blur(15px);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  width: 240px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(25px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 30px 0;
+  padding: 40px 0;
   position: sticky;
   top: 0;
   height: 100vh;
+  transition: width 0.3s ease;
+  z-index: 100;
 }
 
 .logo-box {
   color: #E50914;
   font-weight: 800;
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   margin-bottom: 50px;
-  text-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
+  padding: 0 30px;
+  text-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
+  letter-spacing: 2px;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .nav-item {
-  font-size: 1.5rem;
-  margin-bottom: 35px;
-  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 30px;
+  color: #888;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
+  position: relative;
+  width: 100%;
+}
+
+.nav-icon {
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+}
+
+.nav-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .nav-item.active, .nav-item:hover {
-  color: #fff; /* White for better visibility */
-  filter: drop-shadow(0 0 10px #E50914);
+  color: #fff;
+  background: rgba(229, 9, 20, 0.1);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: #E50914;
+  box-shadow: 0 0 15px #E50914;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 15px 30px;
+}
+
+.nav-badge {
+  background: #E50914;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: auto;
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.4);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite ease-in-out;
 }
 
 /* Main Content */
@@ -149,7 +214,9 @@
 }
 
 .td-cell {
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding: 0 10px;
 }
 

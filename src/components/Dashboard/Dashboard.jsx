@@ -7,6 +7,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSubscriptions } from '../../hooks/useSubscriptions';
 import ColumnFilter from '../Shared/ColumnFilter';
+import Sidebar from '../Shared/Sidebar';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -54,18 +55,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <div className="glass-sidebar">
-        <div className="logo-box">WP</div>
-        <nav className="nav-links">
-          <div className="nav-item active"><FiPlay /></div>
-          <div className="nav-item" onClick={() => navigate('/devices')} style={{cursor: 'pointer'}}><FiUsers /></div>
-          <div className="nav-item" onClick={() => navigate('/payments')} style={{cursor: 'pointer'}}><FiDollarSign /></div>
-          <div className="nav-item" onClick={() => navigate('/subscriptions')} style={{cursor: 'pointer'}}><FiTrendingUp /></div>
-          {user?.role === 'SUPER_ADMIN' && (
-            <div className="nav-item" onClick={() => navigate('/admin-management')} title="Admin Management" style={{cursor: 'pointer'}}><FiUserPlus /></div>
-          )}
-        </nav>
-      </div>
+      <Sidebar activePage="dashboard" />
 
       <div className="content-area">
         <header className="dash-header">
@@ -179,7 +169,7 @@ const Dashboard = () => {
             ) : subsError ? (
               <Alert variant="danger" className="m-3">Failed to load recent subscriptions: {subsError.message}</Alert>
             ) : filteredSubs.length === 0 ? (
-              <div className="p-4 text-center text-muted">No matching subscriptions found.</div>
+              <div className="p-4 text-center text-white">No matching subscriptions found.</div>
             ) : (
               filteredSubs.map((sub, index) => (
                 <motion.div 

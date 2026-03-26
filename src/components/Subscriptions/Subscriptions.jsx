@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSubscriptions, useCreateManualSubscription, useDeleteSubscription } from '../../hooks/useSubscriptions';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
+import Sidebar from '../Shared/Sidebar';
 import '../Dashboard/Dashboard.css';
 
 const Subscriptions = () => {
@@ -49,7 +50,7 @@ const Subscriptions = () => {
     createSubMutation.mutate(newSub, {
       onSuccess: () => {
         setShowModal(false);
-        setNewSub({ deviceId: '', plan: '' });
+        setNewSub({ deviceId: '', plan: 'ANNUAL' });
       }
     });
   };
@@ -62,15 +63,7 @@ const Subscriptions = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="glass-sidebar">
-        <div className="logo-box">WP</div>
-        <nav className="nav-links">
-          <div className="nav-item" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}><FiPlay /></div>
-          <div className="nav-item" onClick={() => navigate('/devices')} style={{cursor: 'pointer'}}><FiUsers /></div>
-          <div className="nav-item" onClick={() => navigate('/payments')} style={{cursor: 'pointer'}}><FiDollarSign /></div>
-          <div className="nav-item active"><FiTrendingUp /></div>
-        </nav>
-      </div>
+      <Sidebar activePage="subscriptions" />
 
       <div className="content-area">
         <header className="dash-header">
@@ -103,7 +96,7 @@ const Subscriptions = () => {
                   >
                     <div className="px-3 py-2">
                        <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-muted">{user?.role}</div>
+                       <div className="small text-white">{user?.role}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -165,7 +158,7 @@ const Subscriptions = () => {
             ) : error ? (
               <Alert variant="danger" className="m-3">Error loading subscriptions: {error.message}</Alert>
             ) : filteredSubs.length === 0 ? (
-              <div className="p-4 text-center text-muted">No matching subscriptions found.</div>
+              <div className="p-4 text-center text-white">No matching subscriptions found.</div>
             ) : (
               filteredSubs.map((sub, index) => (
                 <motion.div 

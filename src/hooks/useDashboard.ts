@@ -10,5 +10,6 @@ export const useDashboardStats = () => {
       const { data } = await apiClient.get<DashboardStats>(DASHBOARD_ENDPOINTS.STATS);
       return data;
     },
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time counters
   });
 };
