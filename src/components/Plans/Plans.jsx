@@ -156,7 +156,7 @@ const Plans = () => {
             <Alert variant="danger">Error loading plans: {error.message}</Alert>
           ) : (
             <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-              <div className="table-header-row" style={{ minWidth: '900px', gridTemplateColumns: '1.5fr 1fr 1fr 2fr 1fr 1fr' }}>
+              <div className="table-header-row" style={{ minWidth: '900px', gridTemplateColumns: '2.5fr 1fr 1fr 2fr 1fr 1fr', gap: '20px' }}>
                 <div className="th-cell">
                   PLAN NAME
                   <ColumnFilter column="plan" onFilterChange={(_, val) => setPlanFilter(val)} placeholder="Plan Name" />
@@ -175,7 +175,7 @@ const Plans = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center"
-                  style={{ minWidth: '900px', gridTemplateColumns: '1.5fr 1fr 1fr 2fr 1fr 1fr' }}
+                  style={{ minWidth: '900px', gridTemplateColumns: '2.5fr 1fr 1fr 2fr 1fr 1fr', gap: '20px' }}
                 >
                   <div className="td-cell fw-bold text-white px-2">
                     <FiTag className="text-danger me-2" />

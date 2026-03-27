@@ -160,7 +160,7 @@ const Resellers = () => {
             <Alert variant="danger" className="m-3">Error loading resellers: {error.message}</Alert>
           ) : (
             <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-              <div className="table-header-row" style={{ minWidth: '1000px', gridTemplateColumns: '1.5fr 1.5fr 1.5fr 1fr 1.2fr 1fr' }}>
+              <div className="table-header-row" style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px' }}>
                 <div className="th-cell">
                   USERNAME
                   <ColumnFilter column="username" onFilterChange={(_, val) => setUsernameFilter(val)} placeholder="Username" />
@@ -185,7 +185,7 @@ const Resellers = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center"
-                  style={{ minWidth: '1000px', gridTemplateColumns: '1.5fr 1.5fr 1.5fr 1fr 1.2fr 1fr' }}
+                  style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px' }}
                 >
                   <div className="td-cell fw-bold text-white px-2">
                     <FiUser className="text-danger me-2" />

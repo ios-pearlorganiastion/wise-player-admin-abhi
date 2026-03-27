@@ -81,7 +81,7 @@ const Users = () => {
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row user-table-grid" style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr' }}>
+            <div className="table-header-row user-table-grid" style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '3.5fr 2fr 1.5fr 1.5fr', gap: '20px' }}>
               <div className="th-cell">
                 ACCOUNT ID
                 <ColumnFilter column="account" onFilterChange={(_, val) => setAccountFilter(val)} placeholder="Account ID" />
@@ -107,7 +107,7 @@ const Users = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center user-table-grid"
-                  style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr' }}
+                  style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '3.5fr 2fr 1.5fr 1.5fr', gap: '20px' }}
                 >
                   <div className="td-cell fw-bold text-white px-2" title={dev.deviceId}>{dev.deviceId}</div>
                   <div className="td-cell text-white">{new Date(dev.registeredAt).toLocaleDateString()}</div>

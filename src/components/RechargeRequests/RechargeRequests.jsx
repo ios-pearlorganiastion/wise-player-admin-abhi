@@ -121,7 +121,7 @@ const ActivationRequests = () => {
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row req-table-grid" style={{ minWidth: '1000px', display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1fr 1fr 1.5fr 1.5fr 1.5fr' }}>
+            <div className="table-header-row req-table-grid" style={{ minWidth: '1200px', display: 'grid', gridTemplateColumns: 'minmax(350px, 3fr) 1.5fr 1fr 1fr 1.5fr 1.5fr 1.5fr', gap: '20px' }}>
               <div className="th-cell">
                 DEVICE ID
                 <ColumnFilter column="device" onFilterChange={(_, val) => setDeviceFilter(val)} placeholder="Device ID" />
@@ -153,9 +153,9 @@ const ActivationRequests = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center req-table-grid"
-                  style={{ minWidth: '1000px', display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1fr 1fr 1.5fr 1.5fr 1.5fr' }}
+                  style={{ minWidth: '1200px', display: 'grid', gridTemplateColumns: 'minmax(350px, 3fr) 1.5fr 1fr 1fr 1.5fr 1.5fr 1.5fr', gap: '20px' }}
                 >
-                  <div className="td-cell fw-bold text-white px-2" title={req.deviceId}>{req.deviceId.substring(0, 8)}...</div>
+                  <div className="td-cell fw-bold text-white px-2" title={req.deviceId}>{req.deviceId}</div>
                   <div className="td-cell">{req.planName}</div>
                   <div className="td-cell">{req.amount}</div>
                   <div className="td-cell">{req.currency}</div>

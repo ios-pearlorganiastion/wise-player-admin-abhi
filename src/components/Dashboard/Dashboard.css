@@ -180,12 +180,13 @@
 
 .table-header-row {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 3.5fr 1.2fr 1fr 1fr 1fr;
   padding: 15px 20px;
-  color: #fff; /* Changed from #555 for visibility */
+  color: #fff;
   font-weight: 700;
   letter-spacing: 1px;
   align-items: center;
+  gap: 20px;
 }
 
 .th-cell {
@@ -195,18 +196,19 @@
 
 .table-data-row {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 3.5fr 1.2fr 1fr 1fr 1fr;
   padding: 20px;
   align-items: center;
   border-bottom: 1px solid #222;
   transition: 0.3s;
+  gap: 20px;
 }
 
 /* Specialized Grid for Subscriptions Table (5 columns) */
 .subs-table-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 2fr) 120px 150px 150px 120px;
-  gap: 15px;
+  grid-template-columns: minmax(350px, 3fr) 120px 150px 150px 120px;
+  gap: 20px;
   align-items: center;
   padding: 15px 25px;
   border-bottom: 1px solid #222;
@@ -215,8 +217,6 @@
 
 .td-cell {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   padding: 0 10px;
 }
 
@@ -228,8 +228,8 @@
 /* Specialized Grid for Payments Table (6 columns) */
 .payment-table-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 2fr) 120px 150px 150px 150px 120px;
-  gap: 15px;
+  grid-template-columns: minmax(350px, 3fr) 120px 150px 150px 150px 120px;
+  gap: 20px;
   align-items: center;
   padding: 15px 25px;
   border-bottom: 1px solid #222;
@@ -242,8 +242,8 @@
 
 .device-table-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 2fr) 120px 160px 150px 120px 120px 150px 200px 150px 120px;
-  gap: 15px;
+  grid-template-columns: minmax(350px, 3fr) 120px 160px 150px 120px 120px 150px 200px 150px 120px;
+  gap: 20px;
   align-items: center;
   padding: 15px 25px;
   border-bottom: 1px solid #222;

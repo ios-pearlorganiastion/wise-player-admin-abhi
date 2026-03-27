@@ -208,7 +208,7 @@ const Reports = () => {
                 <Alert variant="danger">Error loading reseller data</Alert>
               ) : (
                 <div className="custom-table-wrapper">
-                  <div className="table-header-row" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr' }}>
+                  <div className="table-header-row" style={{ gridTemplateColumns: '2.5fr 1fr 1fr 1fr', gap: '20px' }}>
                     <div className="th-cell">RESELLER</div>
                     <div className="th-cell text-center">TOTAL USERS</div>
                     <div className="th-cell text-center">ACTIVE USERS</div>
@@ -221,7 +221,7 @@ const Reports = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
                       className="table-data-row" 
-                      style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr' }}
+                      style={{ gridTemplateColumns: '2.5fr 1fr 1fr 1fr', gap: '20px' }}
                     >
                       <div className="td-cell text-white fw-bold">
                         <div className="movie-info px-2">
