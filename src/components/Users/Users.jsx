@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Badge, Spinner, Alert, Button, Image } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUserCheck, FiActivity, FiLogOut, FiShield } from 'react-icons/fi';
+import { FiUserCheck, FiActivity, FiLogOut, FiShield, FiMenu } from 'react-icons/fi';
 import { useDevices, useUpdateDeviceStatus } from '../../hooks/useDevices';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
@@ -12,6 +12,7 @@ import '../Dashboard/Dashboard.css';
 const Users = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
   const [accountFilter, setAccountFilter] = useState('');
@@ -28,13 +29,25 @@ const Users = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="users" />
+      <Sidebar 
+        activePage="users" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
 
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Platform <span className="highlight">Users</span></h1>
-            <p>Manage access levels and account status for all platform users</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Platform <span className="highlight">Users</span></h1>
+              <p>Manage access levels and account status for all platform users</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="profile-dropdown-container">
@@ -81,14 +94,14 @@ const Users = () => {
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row user-table-grid" style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '3.5fr 2fr 1.5fr 1.5fr', gap: '20px' }}>
-              <div className="th-cell">
+            <div className="table-header-row user-table-grid">
+              <div className="th-cell align-left">
                 ACCOUNT ID
                 <ColumnFilter column="account" onFilterChange={(_, val) => setAccountFilter(val)} placeholder="Account ID" />
               </div>
-              <div className="th-cell">REGISTERED ON</div>
-              <div className="th-cell text-center">STATUS</div>
-              <div className="th-cell text-center">ACTION</div>
+              <div className="th-cell align-left">REGISTERED ON</div>
+              <div className="th-cell align-center">STATUS</div>
+              <div className="th-cell align-center">ACTION</div>
             </div>
 
             {isLoading ? (
@@ -107,16 +120,15 @@ const Users = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center user-table-grid"
-                  style={{ minWidth: '800px', display: 'grid', gridTemplateColumns: '3.5fr 2fr 1.5fr 1.5fr', gap: '20px' }}
                 >
-                  <div className="td-cell fw-bold text-white px-2" title={dev.deviceId}>{dev.deviceId}</div>
-                  <div className="td-cell text-white">{new Date(dev.registeredAt).toLocaleDateString()}</div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={dev.deviceId}>{dev.deviceId}</div>
+                  <div className="td-cell align-left text-white">{new Date(dev.registeredAt).toLocaleDateString()}</div>
+                  <div className="td-cell align-center">
                     <Badge className={`status-pill ${dev.deviceStatus.toLowerCase()}`}>
                       {dev.deviceStatus}
                     </Badge>
                   </div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-center">
                     <Button 
                       variant={dev.deviceStatus === "ACTIVE" ? "outline-danger" : "outline-success"} 
                       size="sm"

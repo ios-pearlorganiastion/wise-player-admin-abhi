@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Table, Modal, Form } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiTag, FiPlus, FiEdit2, FiPower, FiActivity, FiLogOut, FiPackage } from 'react-icons/fi';
+import { FiTag, FiPlus, FiEdit2, FiPower, FiActivity, FiLogOut, FiPackage, FiMenu } from 'react-icons/fi';
 import Sidebar from '../Shared/Sidebar';
 import { usePlans, useCreatePlan, useUpdatePlan, useTogglePlanStatus } from '../../hooks/usePlans';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -12,6 +12,7 @@ import '../Dashboard/Dashboard.css';
 const Plans = () => {
   const { user, logout } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
   const [planFilter, setPlanFilter] = useState('');
@@ -89,12 +90,24 @@ const Plans = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="plans" />
+      <Sidebar 
+        activePage="plans" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Subscription <span className="highlight">Plans</span></h1>
-            <p>Define and manage your service offerings</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Subscription <span className="highlight">Plans</span></h1>
+              <p>Define and manage your service offerings</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
@@ -156,16 +169,16 @@ const Plans = () => {
             <Alert variant="danger">Error loading plans: {error.message}</Alert>
           ) : (
             <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-              <div className="table-header-row" style={{ minWidth: '900px', gridTemplateColumns: '2.5fr 1fr 1fr 2fr 1fr 1fr', gap: '20px' }}>
-                <div className="th-cell">
+              <div className="table-header-row plan-table-grid">
+                <div className="th-cell align-left">ID</div>
+                <div className="th-cell align-left">
                   PLAN NAME
                   <ColumnFilter column="plan" onFilterChange={(_, val) => setPlanFilter(val)} placeholder="Plan Name" />
                 </div>
-                <div className="th-cell">DURATION</div>
-                <div className="th-cell">PRICE</div>
-                <div className="th-cell">DESCRIPTION</div>
-                <div className="th-cell text-center">STATUS</div>
-                <div className="th-cell text-center">ACTIONS</div>
+                <div className="th-cell align-right">DURATION</div>
+                <div className="th-cell align-right">PRICE</div>
+                <div className="th-cell align-center">STATUS</div>
+                <div className="th-cell align-center">ACTIONS</div>
               </div>
 
               {filteredPlans.map((plan, index) => (
@@ -174,25 +187,24 @@ const Plans = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="table-data-row align-items-center"
-                  style={{ minWidth: '900px', gridTemplateColumns: '2.5fr 1fr 1fr 2fr 1fr 1fr', gap: '20px' }}
+                  className="table-data-row align-items-center plan-table-grid"
                 >
-                  <div className="td-cell fw-bold text-white px-2">
+                  <div className="td-cell align-left text-white-50">#{plan.id}</div>
+                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text">
                     <FiTag className="text-danger me-2" />
                     {plan.name}
                   </div>
-                  <div className="td-cell text-white-50">{plan.durationDays} Days</div>
-                  <div className="td-cell">
+                  <div className="td-cell align-right text-white-50">{plan.durationDays} Days</div>
+                  <div className="td-cell align-right">
                     <span className="text-info fw-bold">{plan.price}</span> {plan.currency}
                   </div>
-                  <div className="td-cell text-white-50 small pe-3">{plan.description}</div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-center">
                     <Badge bg={plan.active ? "success" : "secondary"} className="status-pill">
                       {plan.active ? "ACTIVE" : "INACTIVE"}
                     </Badge>
                   </div>
-                  <div className="td-cell text-center">
-                    <Button variant="outline-info" size="sm" className="me-2" onClick={() => handleOpenModal(plan)}>
+                  <div className="td-cell align-center">
+                    <Button variant="outline-info" size="sm" className="me-2" onClick={() => handleOpenModal(plan)} title="Edit">
                       <FiEdit2 />
                     </Button>
                     <Button 
@@ -200,6 +212,7 @@ const Plans = () => {
                       size="sm"
                       onClick={() => handleToggleStatus(plan.id)}
                       disabled={toggleStatusMutation.isPending}
+                      title={plan.active ? "Disable" : "Enable"}
                     >
                       <FiPower />
                     </Button>

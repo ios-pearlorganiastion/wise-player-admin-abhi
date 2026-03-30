@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiLogOut } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiLogOut, FiMenu } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { usePayments, usePaymentStats } from '../../hooks/usePayments';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -13,6 +13,7 @@ const Payments = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
   
@@ -51,13 +52,25 @@ const Payments = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="payments" />
+      <Sidebar 
+        activePage="payments" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
 
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Revenue & <span className="highlight">Payments</span></h1>
-            <p>Track all transactions and revenue metrics</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Revenue & <span className="highlight">Payments</span></h1>
+              <p>Track all transactions and revenue metrics</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
@@ -130,17 +143,18 @@ const Payments = () => {
           </div>
           
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row payment-table-grid" style={{ minWidth: '1100px' }}>
-              <div className="th-cell">
-                ID <ColumnFilter column="transactionId" onFilterChange={handleFilterChange} placeholder="TX ID" />
+            <div className="table-header-row payment-table-grid">
+              <div className="th-cell align-left">ID</div>
+              <div className="th-cell align-left">
+                DEVICE ID <ColumnFilter column="transactionId" onFilterChange={handleFilterChange} placeholder="TX ID" />
               </div>
-              <div className="th-cell">AMOUNT</div>
-              <div className="th-cell">
+              <div className="th-cell align-left">RESELLER</div>
+              <div className="th-cell align-right">AMOUNT</div>
+              <div className="th-cell align-left">
                 METHOD <ColumnFilter column="method" onFilterChange={handleFilterChange} placeholder="Method" />
               </div>
-              <div className="th-cell">DATE</div>
-              <div className="th-cell">TIME</div>
-              <div className="th-cell text-center">
+              <div className="th-cell align-left">DATE</div>
+              <div className="th-cell align-center">
                 STATUS
                 <ColumnFilter 
                   column="status" 
@@ -157,6 +171,7 @@ const Payments = () => {
                   alignRight
                 />
               </div>
+              <div className="th-cell align-center">ACTIONS</div>
             </div>
 
             {isPaymentsLoading ? (
@@ -173,19 +188,26 @@ const Payments = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center payment-table-grid"
-                  style={{ minWidth: '1100px' }}
                 >
-                  <div className="td-cell fw-bold text-white px-2" title={payment.paypalOrderId || payment.paymentId || payment.id}>
+                  <div className="td-cell align-left text-white-50">#{payment.id}</div>
+                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={payment.paypalOrderId || payment.paymentId || payment.id}>
                     {payment.paypalOrderId || (payment.paymentId ? payment.paymentId : 'N/A')}
                   </div>
-                  <div className="td-cell">{payment.amount} €</div>
-                  <div className="td-cell">{payment.paypalOrderId ? 'PayPal' : (payment.paymentMethod || 'N/A')}</div>
-                  <div className="td-cell text-white">{new Date(payment.createdAt).toLocaleDateString()}</div>
-                  <div className="td-cell text-white">{new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-left">--</div>
+                  <div className="td-cell align-right fw-bold text-success">{payment.amount} €</div>
+                  <div className="td-cell align-left">{payment.paypalOrderId ? 'PayPal' : (payment.paymentMethod || 'N/A')}</div>
+                  <div className="td-cell align-left text-white">
+                    {new Date(payment.createdAt).toLocaleDateString()}
+                    <br/>
+                    <small className="text-white-50">{new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+                  </div>
+                  <div className="td-cell align-center">
                     <Badge className={`status-pill ${payment.status?.toLowerCase() || 'pending'}`}>
                       {payment.status}
                     </Badge>
+                  </div>
+                  <div className="td-cell align-center">
+                    {/* Actions if needed */}
                   </div>
                 </motion.div>
               ))

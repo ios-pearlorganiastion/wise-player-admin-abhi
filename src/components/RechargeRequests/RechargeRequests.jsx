@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCheckSquare, FiCheck, FiX, FiActivity, FiLogOut, FiMessageSquare } from 'react-icons/fi';
+import { FiCheckSquare, FiCheck, FiX, FiActivity, FiLogOut, FiMessageSquare, FiMenu } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useActivationRequests, useApproveActivation, useRejectActivation } from '../../hooks/useActivationRequests';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -14,6 +14,7 @@ const ActivationRequests = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
   const [statusFilter, setStatusFilter] = useState('PENDING');
@@ -55,13 +56,25 @@ const ActivationRequests = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="activation-requests" />
+      <Sidebar 
+        activePage="activation-requests" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
 
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Activation <span className="highlight">Requests</span></h1>
-            <p>Approve or reject manual activation and renewal requests</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Activation <span className="highlight">Requests</span></h1>
+              <p>Approve or reject manual activation and renewal requests</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
@@ -121,20 +134,21 @@ const ActivationRequests = () => {
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row req-table-grid" style={{ minWidth: '1200px', display: 'grid', gridTemplateColumns: 'minmax(350px, 3fr) 1.5fr 1fr 1fr 1.5fr 1.5fr 1.5fr', gap: '20px' }}>
-              <div className="th-cell">
+            <div className="table-header-row req-table-grid">
+              <div className="th-cell align-left">ID</div>
+              <div className="th-cell align-left">
                 DEVICE ID
                 <ColumnFilter column="device" onFilterChange={(_, val) => setDeviceFilter(val)} placeholder="Device ID" />
               </div>
-              <div className="th-cell">
+              <div className="th-cell align-left">
                 PLAN
                 <ColumnFilter column="plan" onFilterChange={(_, val) => setPlanFilter(val)} placeholder="Plan" />
               </div>
-              <div className="th-cell">AMOUNT</div>
-              <div className="th-cell">CURRENCY</div>
-              <div className="th-cell">DATE</div>
-              <div className="th-cell">STATUS</div>
-              <div className="th-cell text-center">ACTIONS</div>
+              <div className="th-cell align-right">AMOUNT</div>
+              <div className="th-cell align-center">STATUS</div>
+              <div className="th-cell align-right">CURRENT BAL</div>
+              <div className="th-cell align-left">DATE</div>
+              <div className="th-cell align-center">ACTIONS</div>
             </div>
 
             {isLoading ? (
@@ -153,25 +167,25 @@ const ActivationRequests = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center req-table-grid"
-                  style={{ minWidth: '1200px', display: 'grid', gridTemplateColumns: 'minmax(350px, 3fr) 1.5fr 1fr 1fr 1.5fr 1.5fr 1.5fr', gap: '20px' }}
                 >
-                  <div className="td-cell fw-bold text-white px-2" title={req.deviceId}>{req.deviceId}</div>
-                  <div className="td-cell">{req.planName}</div>
-                  <div className="td-cell">{req.amount}</div>
-                  <div className="td-cell">{req.currency}</div>
-                  <div className="td-cell text-white">{new Date(req.createdAt).toLocaleDateString()}</div>
-                  <div className="td-cell">
+                  <div className="td-cell align-left text-white-50">#{req.id}</div>
+                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={req.deviceId}>{req.deviceId}</div>
+                  <div className="td-cell align-left">{req.planName}</div>
+                  <div className="td-cell align-right fw-bold text-success">{req.amount} {req.currency}</div>
+                  <div className="td-cell align-center">
                     <Badge className={`status-pill ${req.status.toLowerCase()}`}>
                       {req.status}
                     </Badge>
                   </div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-right text-info">--</div>
+                  <div className="td-cell align-left text-white">{new Date(req.createdAt).toLocaleDateString()}</div>
+                  <div className="td-cell align-center">
                     {req.status === 'PENDING' ? (
                       <>
-                        <Button variant="outline-success" size="sm" className="me-2" onClick={() => handleOpenModal(req, 'APPROVE')}>
+                        <Button variant="outline-success" size="sm" className="me-2" onClick={() => handleOpenModal(req, 'APPROVE')} title="Approve">
                           <FiCheck />
                         </Button>
-                        <Button variant="outline-danger" size="sm" onClick={() => handleOpenModal(req, 'REJECT')}>
+                        <Button variant="outline-danger" size="sm" onClick={() => handleOpenModal(req, 'REJECT')} title="Reject">
                           <FiX />
                         </Button>
                       </>
@@ -182,7 +196,7 @@ const ActivationRequests = () => {
                         className="text-info p-0 text-decoration-none"
                         onClick={() => handleOpenModal(req, 'VIEW')}
                       >
-                        {req.adminNotes ? <><FiMessageSquare className="me-1" /> View Notes</> : <span className="text-white">No notes</span>}
+                        {req.adminNotes ? <><FiMessageSquare className="me-1" /> View Notes</> : <span className="text-white-50">No notes</span>}
                       </Button>
                     )}
                   </div>

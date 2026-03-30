@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Container, Row, Col, Badge, Image, Spinner, Alert } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiStar, FiActivity, FiUserPlus, FiLogOut } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiStar, FiActivity, FiUserPlus, FiLogOut, FiMenu } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
@@ -19,6 +19,7 @@ const Dashboard = () => {
       ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase().replace('_', ' ') 
       : 'Admin';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats();
   // Fetch a small chunk for "recent"
   const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 10);
@@ -55,16 +56,28 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <Sidebar activePage="dashboard" />
+      <Sidebar 
+        activePage="dashboard" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
 
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>
-              {displayRole}{' '}
-              <span className="highlight">Dashboard</span>
-            </h1>
-            <p>Real-time analytics & subscriptions</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>
+                {displayRole}{' '}
+                <span className="highlight">Dashboard</span>
+              </h1>
+              <p>Real-time analytics & subscriptions</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
@@ -75,7 +88,7 @@ const Dashboard = () => {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
                 <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=00F5FF&color=000`} 
                   roundedCircle 
                   className="admin-avatar m-0" 
                 />
@@ -137,11 +150,11 @@ const Dashboard = () => {
           </div>
           
           <div className="custom-table-wrapper">
-            <div className="table-header-row">
-              <div className="th-cell">
+            <div className="table-header-row dashboard-table-grid">
+              <div className="th-cell align-left">
                 DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
               </div>
-              <div className="th-cell">
+              <div className="th-cell align-left">
                 PLAN 
                 <ColumnFilter 
                   column="plan" 
@@ -150,9 +163,9 @@ const Dashboard = () => {
                   options={[{label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'},{label: 'Trial', value: 'TRIAL'}]}
                 />
               </div>
-              <div className="th-cell">START DATE</div>
-              <div className="th-cell">END DATE</div>
-              <div className="th-cell text-center">
+              <div className="th-cell align-left">START DATE</div>
+              <div className="th-cell align-left">END DATE</div>
+              <div className="th-cell align-center">
                 STATUS
                 <ColumnFilter 
                   column="status" 
@@ -177,9 +190,9 @@ const Dashboard = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="table-data-row"
+                  className="table-data-row dashboard-table-grid"
                 >
-                  <div className="td-cell">
+                  <div className="td-cell align-left wrap-text">
                     <div className="movie-info px-2">
                       <FiPlay className="text-info me-2" />
                       <span className="fw-bold text-white" title={sub.deviceId}>
@@ -187,10 +200,10 @@ const Dashboard = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="td-cell">{sub.plan}</div>
-                  <div className="td-cell text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
-                  <div className="td-cell text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-left">{sub.plan}</div>
+                  <div className="td-cell align-left text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
+                  <div className="td-cell align-left text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
+                  <div className="td-cell align-center">
                     <Badge className={`status-pill ${sub.status.toLowerCase()}`}>
                       {sub.status}
                     </Badge>

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Form, Modal } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus, FiLogOut } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus, FiLogOut, FiMenu } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions, useCreateManualSubscription, useDeleteSubscription } from '../../hooks/useSubscriptions';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -13,6 +13,7 @@ const Subscriptions = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
   
@@ -63,13 +64,25 @@ const Subscriptions = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="subscriptions" />
+      <Sidebar 
+        activePage="subscriptions" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
 
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Active <span className="highlight">Subscriptions</span></h1>
-            <p>Manage user plans and manual overrides</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Active <span className="highlight">Subscriptions</span></h1>
+              <p>Manage user plans and manual overrides</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
@@ -126,8 +139,9 @@ const Subscriptions = () => {
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row subs-table-grid" style={{ minWidth: '1000px' }}>
-              <div className="th-cell">
+            <div className="table-header-row subs-table-grid">
+              <div className="th-cell align-left">ID</div>
+              <div className="th-cell align-left">
                 DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
               </div>
               <div className="th-cell">
@@ -139,9 +153,10 @@ const Subscriptions = () => {
                   options={[{label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'},{label: 'TRIAL', value: 'TRIAL'}]}
                 />
               </div>
-              <div className="th-cell">START DATE</div>
-              <div className="th-cell">END DATE</div>
-              <div className="th-cell text-center">
+              <div className="th-cell align-left">START DATE</div>
+              <div className="th-cell align-left">END DATE</div>
+              <div className="th-cell align-right">AMOUNT</div>
+              <div className="th-cell align-center">
                 STATUS
                 <ColumnFilter 
                   column="status" 
@@ -151,6 +166,7 @@ const Subscriptions = () => {
                   alignRight
                 />
               </div>
+              <div className="th-cell align-center">ACTIONS</div>
             </div>
 
             {isLoading ? (
@@ -167,18 +183,24 @@ const Subscriptions = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center subs-table-grid"
-                  style={{ minWidth: '1000px' }}
                 >
-                  <div className="td-cell fw-bold text-white px-2" title={sub.deviceId}>
+                  <div className="td-cell align-left text-white-50">#{sub.id}</div>
+                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={sub.deviceId}>
                     {sub.deviceId}
                   </div>
-                  <div className="td-cell">{sub.plan}</div>
-                  <div className="td-cell text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
-                  <div className="td-cell text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-left">{sub.plan}</div>
+                  <div className="td-cell align-left text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
+                  <div className="td-cell align-left text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
+                  <div className="td-cell align-right fw-bold text-success">€{sub.amount || '0.00'}</div>
+                  <div className="td-cell align-center">
                     <Badge className={`status-pill ${sub.status?.toLowerCase() || 'expired'}`}>
                       {sub.status}
                     </Badge>
+                  </div>
+                  <div className="td-cell align-center">
+                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(sub.id)} title="Delete">
+                      <FiTrash2 />
+                    </Button>
                   </div>
                 </motion.div>
               ))

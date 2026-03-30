@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Form, Button, Card } from 'react-bootstrap';
-import { FiCalendar, FiTrendingUp, FiUsers, FiStar, FiActivity, FiLogOut, FiBarChart2 } from 'react-icons/fi';
+import { FiCalendar, FiTrendingUp, FiUsers, FiStar, FiActivity, FiLogOut, FiBarChart2, FiMenu } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../Shared/Sidebar';
 import { useRevenueReport, useDeviceReport, useSubscriptionReport, useResellerReport } from '../../hooks/useReports';
@@ -10,6 +10,7 @@ import '../Dashboard/Dashboard.css';
 const Reports = () => {
   const { user, logout } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   
   // Date range defaults - last 30 days
   const today = new Date().toISOString().split('T')[0];
@@ -23,16 +24,28 @@ const Reports = () => {
   const { data: subData, isLoading: isSubLoading, error: subError } = useSubscriptionReport(fromDate, toDate);
   const { data: resellerData, isLoading: isResLoading, error: resError } = useResellerReport();
 
-  const COLORS = ['#E50914', '#00d4ff', '#39FF14', '#FFD700', '#FF7F50'];
+  const COLORS = ['#00F5FF', '#9B5CFF', '#39FF14', '#FFD700', '#FF7F50'];
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="reports" />
+      <Sidebar 
+        activePage="reports" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Reports & <span className="highlight">Analytics</span></h1>
-            <p>Visual performance tracking and statistics</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Reports & <span className="highlight">Analytics</span></h1>
+              <p>Visual performance tracking and statistics</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
@@ -43,7 +56,7 @@ const Reports = () => {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
                 <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=00F5FF&color=000`} 
                   roundedCircle 
                   className="admin-avatar m-0" 
                 />
@@ -208,11 +221,11 @@ const Reports = () => {
                 <Alert variant="danger">Error loading reseller data</Alert>
               ) : (
                 <div className="custom-table-wrapper">
-                  <div className="table-header-row" style={{ gridTemplateColumns: '2.5fr 1fr 1fr 1fr', gap: '20px' }}>
-                    <div className="th-cell">RESELLER</div>
-                    <div className="th-cell text-center">TOTAL USERS</div>
-                    <div className="th-cell text-center">ACTIVE USERS</div>
-                    <div className="th-cell text-center">PENDING REQ</div>
+                  <div className="table-header-row reseller-table-grid">
+                    <div className="th-cell align-left">RESELLER</div>
+                    <div className="th-cell align-right">TOTAL USERS</div>
+                    <div className="th-cell align-right">ACTIVE USERS</div>
+                    <div className="th-cell align-center">PENDING REQ</div>
                   </div>
                   {(resellerData || []).map((res, i) => (
                     <motion.div 
@@ -220,18 +233,17 @@ const Reports = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="table-data-row" 
-                      style={{ gridTemplateColumns: '2.5fr 1fr 1fr 1fr', gap: '20px' }}
+                      className="table-data-row reseller-table-grid" 
                     >
-                      <div className="td-cell text-white fw-bold">
+                      <div className="td-cell align-left wrap-text text-white fw-bold">
                         <div className="movie-info px-2">
                            <FiUsers className="text-success me-2" />
                            {res.fullName} <span className="small text-white-50 ms-2">@{res.username}</span>
                         </div>
                       </div>
-                      <div className="td-cell text-center">{res.totalUsers || 0}</div>
-                      <div className="td-cell text-center text-info">{res.activeUsers || 0}</div>
-                      <div className="td-cell text-center">
+                      <div className="td-cell align-right">{res.totalUsers || 0}</div>
+                      <div className="td-cell align-right text-info">{res.activeUsers || 0}</div>
+                      <div className="td-cell align-center">
                         <Badge bg={res.pendingRequests > 0 ? "warning" : "dark"} className="p-2 border border-secondary text-white">
                            {res.pendingRequests || 0}
                         </Badge>

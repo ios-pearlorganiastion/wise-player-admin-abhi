@@ -5,7 +5,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import './ColumnFilter.css'; // Reusing some shared styles or we can create Sidebar.css
 
-const Sidebar = ({ activePage }) => {
+const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { data: stats } = useDashboardStats();
@@ -36,40 +36,51 @@ const Sidebar = ({ activePage }) => {
     { id: 'admin-management', icon: <FiSettings />, path: '/admin-management', label: 'Admins' },
   ];
 
-  return (
-    <div className="glass-sidebar">
-      <div className="logo-box">WP</div>
-      <nav className="nav-links">
-        {navItems.map((item) => (
-          <div 
-            key={item.id}
-            className={`nav-item ${activePage === item.id ? 'active' : ''}`}
-            onClick={() => navigate(item.path)}
-            title={item.label}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
-            {item.showBadge && stats?.pendingActivations > 0 && (
-              <span className="nav-badge animate-pulse">{stats.pendingActivations}</span>
-            )}
-          </div>
-        ))}
-        
-        <div className="sidebar-divider"></div>
+  const handleNavClick = (path) => {
+    navigate(path);
+    if (onMobileClose) onMobileClose();
+  };
 
-        {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') && superAdminItems.map((item) => (
-          <div 
-            key={item.id}
-            className={`nav-item ${activePage === item.id ? 'active' : ''}`}
-            onClick={() => navigate(item.path)}
-            title={item.label}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
-          </div>
-        ))}
-      </nav>
-    </div>
+  return (
+    <>
+      <div 
+        className={`sidebar-overlay ${isMobileOpen ? 'visible' : ''}`} 
+        onClick={onMobileClose}
+      />
+      <div className={`glass-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
+        <div className="logo-box">WP</div>
+        <nav className="nav-links">
+          {navItems.map((item) => (
+            <div 
+              key={item.id}
+              className={`nav-item ${activePage === item.id ? 'active' : ''}`}
+              onClick={() => handleNavClick(item.path)}
+              title={item.label}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+              {item.showBadge && stats?.pendingActivations > 0 && (
+                <span className="nav-badge animate-pulse">{stats.pendingActivations}</span>
+              )}
+            </div>
+          ))}
+          
+          <div className="sidebar-divider"></div>
+
+          {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') && superAdminItems.map((item) => (
+            <div 
+              key={item.id}
+              className={`nav-item ${activePage === item.id ? 'active' : ''}`}
+              onClick={() => handleNavClick(item.path)}
+              title={item.label}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+            </div>
+          ))}
+        </nav>
+      </div>
+    </>
   );
 };
 

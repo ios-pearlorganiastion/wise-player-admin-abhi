@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUserPlus, FiActivity, FiShield, FiLogOut, FiEdit2, FiMail, FiUser, FiCalendar } from 'react-icons/fi';
+import { FiUserPlus, FiActivity, FiShield, FiLogOut, FiEdit2, FiMail, FiUser, FiCalendar, FiMenu } from 'react-icons/fi';
 import { useResellers, useToggleResellerStatus, useCreateReseller, useUpdateReseller } from '../../hooks/useResellers';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
@@ -12,6 +12,7 @@ import '../Dashboard/Dashboard.css';
 const Resellers = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
   
@@ -93,13 +94,25 @@ const Resellers = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="resellers" />
+      <Sidebar 
+        activePage="resellers" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
 
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Manage <span className="highlight">Resellers</span></h1>
-            <p>Admin control for reseller and sub-reseller accounts</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Manage <span className="highlight">Resellers</span></h1>
+              <p>Admin control for reseller and sub-reseller accounts</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>

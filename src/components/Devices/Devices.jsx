@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiShield, FiLogOut } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiShield, FiLogOut, FiMenu } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useDevices, useUpdateDeviceStatus } from '../../hooks/useDevices';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -13,6 +13,7 @@ const Devices = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20; // Increase size for client-side filtering demo or implement server-side
   
@@ -52,13 +53,25 @@ const Devices = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar activePage="devices" />
+      <Sidebar 
+        activePage="devices" 
+        isMobileOpen={isMobileOpen} 
+        onMobileClose={() => setIsMobileOpen(false)} 
+      />
 
       <div className="content-area">
         <header className="dash-header">
-          <div className="welcome-text">
-            <h1>Manage <span className="highlight">Devices</span></h1>
-            <p>View and manage registered user devices</p>
+          <div className="header-left-group">
+            <button 
+              className="mobile-toggle-btn" 
+              onClick={() => setIsMobileOpen(true)}
+            >
+              <FiMenu />
+            </button>
+            <div className="welcome-text">
+              <h1>Manage <span className="highlight">Devices</span></h1>
+              <p>View and manage registered user devices</p>
+            </div>
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
@@ -107,11 +120,11 @@ const Devices = () => {
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row device-table-grid" style={{ minWidth: '1600px' }}>
-              <div className="th-cell">
+            <div className="table-header-row device-table-grid">
+              <div className="th-cell align-left">
                 DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
               </div>
-              <div className="th-cell">
+              <div className="th-cell align-center">
                 STATUS 
                 <ColumnFilter 
                   column="status" 
@@ -120,20 +133,18 @@ const Devices = () => {
                   options={[{label: 'Active', value: 'ACTIVE'}, {label: 'INACTIVE', value: 'INACTIVE'}]}
                 />
               </div>
-              <div className="th-cell">
+              <div className="th-cell align-left">
                 SUBS <ColumnFilter column="subscription" onFilterChange={handleFilterChange} placeholder="Subscription" />
               </div>
-              <div className="th-cell">
+              <div className="th-cell align-left">
                 MODEL <ColumnFilter column="model" onFilterChange={handleFilterChange} placeholder="Model" />
               </div>
-              <div className="th-cell">OS VERSION</div>
-              <div className="th-cell">
+              <div className="th-cell align-left">OS VERSION</div>
+              <div className="th-cell align-left">
                 PLAT <ColumnFilter column="platform" onFilterChange={handleFilterChange} placeholder="Platform" />
               </div>
-              <div className="th-cell">REGISTERED DATE</div>
-              <div className="th-cell">LAST SEEN</div>
-              <div className="th-cell">EXPIRES AT</div>
-              <div className="th-cell text-center">ACTION</div>
+              <div className="th-cell align-left">REGISTERED DATE</div>
+              <div className="th-cell align-center">ACTION</div>
             </div>
 
             {isLoading ? (
@@ -150,22 +161,19 @@ const Devices = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center device-table-grid"
-                  style={{ minWidth: '1600px' }}
                 >
-                  <div className="td-cell fw-bold text-white px-2" title={device.deviceId}>{device.deviceId}</div>
-                  <div className="td-cell">
+                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={device.deviceId}>{device.deviceId}</div>
+                  <div className="td-cell align-center">
                     <Badge className={`status-pill ${(device.deviceStatus)?.toLowerCase() || 'inactive'}`}>
                       {device.deviceStatus}
                     </Badge>
                   </div>
-                  <div className="td-cell">{device.subscriptionType}</div>
-                  <div className="td-cell">{device.deviceModel}</div>
-                  <div className="td-cell">{device.osVersion}</div>
-                  <div className="td-cell">{device.platform}</div>
-                  <div className="td-cell text-white">{device.registeredAt ? new Date(device.registeredAt).toLocaleDateString() : 'N/A'}</div>
-                  <div className="td-cell text-white">{device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : 'N/A'}</div>
-                  <div className="td-cell text-white">{device.expiresAt ? new Date(device.expiresAt).toLocaleDateString() : 'N/A'}</div>
-                  <div className="td-cell text-center">
+                  <div className="td-cell align-left">{device.subscriptionType}</div>
+                  <div className="td-cell align-left">{device.deviceModel}</div>
+                  <div className="td-cell align-left">{device.osVersion}</div>
+                  <div className="td-cell align-left">{device.platform}</div>
+                  <div className="td-cell align-left text-white">{device.registeredAt ? new Date(device.registeredAt).toLocaleDateString() : 'N/A'}</div>
+                  <div className="td-cell align-center">
                     <Button 
                       variant={(device.deviceStatus || device.status) === "ACTIVE" ? "outline-danger" : "outline-success"} 
                       size="sm"
