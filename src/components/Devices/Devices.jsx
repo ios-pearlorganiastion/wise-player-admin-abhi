@@ -7,6 +7,7 @@ import { useDevices, useUpdateDeviceStatus } from '../../hooks/useDevices';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
 import Sidebar from '../Shared/Sidebar';
+import ConfirmModal from '../Shared/ConfirmModal';
 import '../Dashboard/Dashboard.css';
 
 const Devices = () => {
@@ -19,6 +20,8 @@ const Devices = () => {
   
   const { data: devicesData, isLoading, error } = useDevices(page, size);
   const updateStatusMutation = useUpdateDeviceStatus();
+
+  const [confirmState, setConfirmState] = useState({ show: false, device: null });
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -47,8 +50,19 @@ const Devices = () => {
   }, [devicesData, filters]);
 
   const handleStatusToggle = (deviceId, currentStatus) => {
-    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    updateStatusMutation.mutate({ deviceId, status: newStatus });
+    const device = filteredDevices.find(d => (d.deviceId || d.id) === deviceId);
+    setConfirmState({ show: true, device: { ...device, deviceId, currentStatus } });
+  };
+
+  const executeStatusToggle = () => {
+    const { device } = confirmState;
+    if (device) {
+      const newStatus = device.currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      updateStatusMutation.mutate(
+        { deviceId: device.deviceId, status: newStatus },
+        { onSuccess: () => setConfirmState({ show: false, device: null }) }
+      );
+    }
   };
 
   return (
@@ -211,6 +225,17 @@ const Devices = () => {
           )}
         </div>
       </div>
+
+      <ConfirmModal 
+        show={confirmState.show}
+        onHide={() => setConfirmState({ show: false, device: null })}
+        onConfirm={executeStatusToggle}
+        title={confirmState.device?.currentStatus === 'ACTIVE' ? 'Deactivate Device?' : 'Activate Device?'}
+        message={`Are you sure you want to ${confirmState.device?.currentStatus === 'ACTIVE' ? 'deactivate' : 'activate'} this device? This will affect its connectivity to the platform.`}
+        confirmText={confirmState.device?.currentStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+        variant={confirmState.device?.currentStatus === 'ACTIVE' ? 'danger' : 'info'}
+        isLoading={updateStatusMutation.isPending}
+      />
     </div>
   );
 };

@@ -3,12 +3,20 @@ import { apiClient } from "../api/axios";
 import { SUBSCRIPTIONS_ENDPOINTS } from "../api/endpoints";
 import { PaginatedResponse, Subscription, ManualSubscriptionRequest } from "../types/api.types";
 
-export const useSubscriptions = (page: number, size: number) => {
+export const useSubscriptions = (page: number, size: number, filters: { deviceId?: string; plan?: string; status?: string } = {}) => {
+  const hasFilters = !!(filters.deviceId || filters.plan || filters.status);
+  const effectivePage = hasFilters ? 0 : page;
+  const effectiveSize = hasFilters ? 1000 : size; // Fetch all when filtering
+
   return useQuery<PaginatedResponse<Subscription>, Error>({
-    queryKey: ["subscriptions", page, size],
+    queryKey: ["subscriptions", effectivePage, effectiveSize, filters],
     queryFn: async () => {
+      const params = new URLSearchParams({
+        page: effectivePage.toString(),
+        size: effectiveSize.toString(),
+      });
       const { data } = await apiClient.get<PaginatedResponse<Subscription>>(
-        `${SUBSCRIPTIONS_ENDPOINTS.LIST}?page=${page}&size=${size}`
+        `${SUBSCRIPTIONS_ENDPOINTS.LIST}?${params.toString()}`
       );
       return data;
     },

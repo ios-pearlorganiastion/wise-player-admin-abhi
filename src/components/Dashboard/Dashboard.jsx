@@ -40,7 +40,7 @@ const Dashboard = () => {
     return subsData.content.filter(sub => {
       return (
         sub.deviceId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
-        (filters.plan === '' || sub.plan === filters.plan) &&
+        (filters.plan === '' || (sub.plan || sub.planName || sub.subscriptionPlan || '') === filters.plan) &&
         (filters.status === '' || sub.status === filters.status)
       );
     }).slice(0, 5); // Keep only top 5 for dashboard
@@ -200,7 +200,7 @@ const Dashboard = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="td-cell align-left">{sub.plan}</div>
+                  <div className="td-cell align-left">{sub.plan || sub.planName || sub.subscriptionPlan}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
                   <div className="td-cell align-center">

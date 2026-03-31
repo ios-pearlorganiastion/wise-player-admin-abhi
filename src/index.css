@@ -122,6 +122,22 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s ease !important;
 }
 
+/* Cross-browser Placeholder Support */
+::-webkit-input-placeholder { color: #ffffff !important; opacity: 1 !important; }
+:-moz-placeholder { color: #ffffff !important; opacity: 1 !important; }
+::-moz-placeholder { color: #ffffff !important; opacity: 1 !important; }
+:-ms-input-placeholder { color: #ffffff !important; opacity: 1 !important; }
+::placeholder { color: #ffffff !important; opacity: 1 !important; }
+
+/* Autofill Support to keep text white */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .form-control:focus {
   background-color: rgba(255, 255, 255, 0.05) !important;
   border-color: var(--accent-cyan) !important;
@@ -202,6 +218,10 @@ h1, h2, h3, h4, h5, h6 {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+}
+
+.btn {
+  justify-content: center;
 }
 
 /* Modal Responsiveness */

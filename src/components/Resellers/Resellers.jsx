@@ -7,6 +7,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
 import Pagination from '../Shared/Pagination';
 import Sidebar from '../Shared/Sidebar';
+import ConfirmModal from '../Shared/ConfirmModal';
 import '../Dashboard/Dashboard.css';
 
 const Resellers = () => {
@@ -30,6 +31,8 @@ const Resellers = () => {
     email: '',
     password: ''
   });
+
+  const [confirmState, setConfirmState] = useState({ show: false, reseller: null });
 
   // Filter state
   const [usernameFilter, setUsernameFilter] = useState('');
@@ -86,9 +89,16 @@ const Resellers = () => {
     }
   };
 
-  const handleStatusToggle = (id) => {
-    if (window.confirm("Are you sure you want to change this reseller's status?")) {
-      toggleStatusMutation.mutate(id);
+  const handleStatusToggle = (reseller) => {
+    setConfirmState({ show: true, reseller });
+  };
+
+  const executeStatusToggle = () => {
+    const { reseller } = confirmState;
+    if (reseller) {
+      toggleStatusMutation.mutate(reseller.id, {
+        onSuccess: () => setConfirmState({ show: false, reseller: null })
+      });
     }
   };
 
@@ -225,7 +235,7 @@ const Resellers = () => {
                         variant={reseller.active ? "outline-danger" : "outline-success"} 
                         size="sm"
                         disabled={toggleStatusMutation.isPending}
-                        onClick={() => handleStatusToggle(reseller.id)}
+                        onClick={() => handleStatusToggle(reseller)}
                       >
                         <FiShield />
                       </Button>
@@ -314,6 +324,17 @@ const Resellers = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+      <ConfirmModal 
+        show={confirmState.show}
+        onHide={() => setConfirmState({ show: false, reseller: null })}
+        onConfirm={executeStatusToggle}
+        title={confirmState.reseller?.active ? 'Deactivate Reseller?' : 'Activate Reseller?'}
+        message={`Are you sure you want to ${confirmState.reseller?.active ? 'deactivate' : 'activate'} this reseller account? This will toggle their access to the control panel.`}
+        confirmText={confirmState.reseller?.active ? 'Deactivate' : 'Activate'}
+        variant={confirmState.reseller?.active ? 'danger' : 'info'}
+        isLoading={toggleStatusMutation.isPending}
+      />
     </div>
   );
 };

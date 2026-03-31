@@ -338,12 +338,29 @@
 }
 
 /* Profile Dropdown */
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-dropdown-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .profile-avatar-trigger {
   cursor: pointer;
   padding: 4px;
   border-radius: 50%;
   border: 2px solid transparent;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
 }
 
 .profile-avatar-trigger:hover, .profile-avatar-trigger.active {
@@ -352,13 +369,17 @@
 }
 
 .profile-menu {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: 0;
+  min-width: 200px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   padding: 12px;
   box-shadow: var(--card-shadow);
-  margin-top: 15px;
+  z-index: 1000;
 }
 
 .profile-menu-item {
@@ -553,6 +574,7 @@
   display: block;
   width: 100%;
   overflow-x: auto;
+  min-height: 400px;
   -webkit-overflow-scrolling: touch;
   /* Invisible scrollbar for cleaner UI but still scrollable */
   scrollbar-width: thin;
@@ -585,12 +607,12 @@
 /* 
   Subscriptions Table Grid (8 cols): ID, DEVICE ID, PLAN, START, END, AMOUNT, STATUS, ACTIONS
 */
-.subs-table-grid { grid-template-columns: 80px minmax(180px, 2fr) 100px 120px 120px 100px 100px 80px; gap: 15px; }
+.subs-table-grid { grid-template-columns: 80px minmax(180px, 2fr) 100px 120px 120px 100px 100px; gap: 15px; }
 
 /* 
-  Recharge Requests Table Grid (8 cols): ID, DEVICE ID, PLAN, AMOUNT, STATUS, CURRENT BAL, DATE, ACTIONS
+  Recharge Requests Table Grid (7 cols): ID, DEVICE ID, PLAN, AMOUNT, STATUS, DATE, ACTIONS
 */
-.req-table-grid { grid-template-columns: 80px minmax(180px, 2fr) minmax(150px, 1.5fr) 120px 100px 120px 120px 100px; gap: 15px; }
+.req-table-grid { grid-template-columns: 80px minmax(180px, 2fr) minmax(150px, 1.5fr) 120px 100px 120px 100px; gap: 15px; }
 
 /* 
   Plans Table Grid (6 cols): ID, NAME, DURATION, PRICE, STATUS, ACTIONS
@@ -605,7 +627,7 @@
 /* 
   Payments Table Grid (8 cols): ID, DEVICE ID, RESELLER, AMOUNT, TYPE, DATE, STATUS, ACTIONS
 */
-.payment-table-grid { grid-template-columns: 80px minmax(150px, 1.5fr) minmax(150px, 1.5fr) 100px 100px 140px 100px 100px; gap: 15px; }
+.payment-table-grid { grid-template-columns: minmax(130px, 1.2fr) minmax(160px, 1.5fr) 100px 100px 120px 100px 100px; gap: 15px; }
 
 .table-header-row {
   padding: 15px 25px;
@@ -681,4 +703,74 @@
     padding: 5px 0;
   }
   /* Inject pseudo-headers via data attributes mapped in React (requires structural change, so we stick to horizontal scroll by default as requested to NOT change structure) */
+}
+
+/* Custom Modal Select/Dropdown */
+.custom-modal-select-wrapper {
+  position: relative;
+}
+
+.custom-modal-select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 14px 20px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 52px;
+  font-weight: 500;
+  overflow: visible; /* Allow dropdown to expand outside */
+}
+
+.custom-modal-select:hover, .custom-modal-select.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+}
+
+.custom-modal-options {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  z-index: 2000;
+  padding: 8px;
+  background: #15191c !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+  overflow: visible; /* No scroll, show all options */
+  max-height: none; /* Never clip */
+}
+
+.modal-option {
+  padding: 12px 16px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  color: #fff; /* White for high visibility */
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.modal-option:hover {
+  background: rgba(0, 245, 255, 0.1);
+  color: var(--accent-cyan);
+}
+
+.modal-option.selected {
+  background: var(--grad-primary);
+  color: #000;
+  font-weight: 700;
+}
+
+.transition-03 {
+  transition: 0.3s;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
 }

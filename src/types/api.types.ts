@@ -69,7 +69,9 @@ export interface Payment {
   deviceId: string;
   amount: number;
   currency: string;
-  plan: string;
+  plan?: string;
+  planName?: string;
+  subscriptionPlan?: string;
   paymentMethod: string;
   paypalOrderId?: string;
   status: "SUCCESS" | "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED";

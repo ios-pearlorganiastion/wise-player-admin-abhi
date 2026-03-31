@@ -38,19 +38,25 @@ const ActivationRequests = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [adminNotes, setAdminNotes] = useState('');
   const [actionType, setActionType] = useState('APPROVE'); // 'APPROVE' or 'REJECT'
+  const [actionError, setActionError] = useState('');
 
   const handleOpenModal = (request, type) => {
     setSelectedRequest(request);
     setActionType(type);
     setAdminNotes('');
+    setActionError('');
     setShowModal(true);
   };
 
   const handleAction = (e) => {
     e.preventDefault();
+    setActionError('');
     const mutation = actionType === 'APPROVE' ? approveMutation : rejectMutation;
     mutation.mutate({ id: selectedRequest.id, adminNotes }, {
-      onSuccess: () => setShowModal(false)
+      onSuccess: () => setShowModal(false),
+      onError: (err) => {
+        setActionError(err.response?.data?.message || err.message || 'An error occurred during the action.');
+      }
     });
   };
 
@@ -146,7 +152,7 @@ const ActivationRequests = () => {
               </div>
               <div className="th-cell align-right">AMOUNT</div>
               <div className="th-cell align-center">STATUS</div>
-              <div className="th-cell align-right">CURRENT BAL</div>
+
               <div className="th-cell align-left">DATE</div>
               <div className="th-cell align-center">ACTIONS</div>
             </div>
@@ -177,7 +183,7 @@ const ActivationRequests = () => {
                       {req.status}
                     </Badge>
                   </div>
-                  <div className="td-cell align-right text-info">--</div>
+
                   <div className="td-cell align-left text-white">{new Date(req.createdAt).toLocaleDateString()}</div>
                   <div className="td-cell align-center">
                     {req.status === 'PENDING' ? (
@@ -222,6 +228,7 @@ const ActivationRequests = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="bg-dark text-white">
+          {actionError && <Alert variant="danger" className="mb-3 border border-danger">{actionError}</Alert>}
           <Form onSubmit={handleAction}>
             <div className="mb-3 p-3 bg-secondary rounded" style={{ fontSize: '0.9rem' }}>
               <div><strong>Device ID:</strong> {selectedRequest?.deviceId}</div>

@@ -7,6 +7,7 @@ import { usePlans, useCreatePlan, useUpdatePlan, useTogglePlanStatus } from '../
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
 import Pagination from '../Shared/Pagination';
+import ConfirmModal from '../Shared/ConfirmModal';
 import '../Dashboard/Dashboard.css';
 
 const Plans = () => {
@@ -39,6 +40,8 @@ const Plans = () => {
     currency: 'EUR',
     description: ''
   });
+
+  const [confirmState, setConfirmState] = useState({ show: false, plan: null });
 
   const handleOpenModal = (plan = null) => {
     if (plan) {
@@ -82,9 +85,16 @@ const Plans = () => {
     }
   };
 
-  const handleToggleStatus = (id) => {
-    if (window.confirm("Are you sure you want to toggle this plan's status?")) {
-      toggleStatusMutation.mutate(id);
+  const handleToggleStatus = (plan) => {
+    setConfirmState({ show: true, plan });
+  };
+
+  const executeToggleStatus = () => {
+    const { plan } = confirmState;
+    if (plan) {
+      toggleStatusMutation.mutate(plan.id, {
+        onSuccess: () => setConfirmState({ show: false, plan: null })
+      });
     }
   };
 
@@ -210,7 +220,7 @@ const Plans = () => {
                     <Button 
                       variant={plan.active ? "outline-danger" : "outline-success"} 
                       size="sm"
-                      onClick={() => handleToggleStatus(plan.id)}
+                      onClick={() => handleToggleStatus(plan)}
                       disabled={toggleStatusMutation.isPending}
                       title={plan.active ? "Disable" : "Enable"}
                     >
@@ -317,6 +327,17 @@ const Plans = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+      <ConfirmModal 
+        show={confirmState.show}
+        onHide={() => setConfirmState({ show: false, plan: null })}
+        onConfirm={executeToggleStatus}
+        title={confirmState.plan?.active ? 'Deactivate Plan?' : 'Activate Plan?'}
+        message={`Are you sure you want to ${confirmState.plan?.active ? 'deactivate' : 'activate'} this subscription plan? Existing subscriptions will remain valid until expiry.`}
+        confirmText={confirmState.plan?.active ? 'Deactivate' : 'Activate'}
+        variant={confirmState.plan?.active ? 'danger' : 'info'}
+        isLoading={toggleStatusMutation.isPending}
+      />
     </div>
   );
 };

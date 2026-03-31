@@ -15,6 +15,19 @@ export const usePlans = (page: number, size: number) => {
   });
 };
 
+// Fetches ALL plans (no pagination) — used in dropdowns
+export const useAllPlans = () => {
+  return useQuery<Plan[], Error>({
+    queryKey: ["plans-all"],
+    queryFn: async () => {
+      const { data } = await apiClient.get<PaginatedResponse<Plan>>(
+        `${PLAN_ENDPOINTS.LIST_ALL}?page=0&size=200`
+      );
+      return data.content || [];
+    },
+  });
+};
+
 export const useCreatePlan = () => {
   const queryClient = useQueryClient();
   return useMutation<Plan, Error, Partial<Plan>>({

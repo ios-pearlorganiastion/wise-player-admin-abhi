@@ -1,12 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Form, Modal } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus, FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus, FiLogOut, FiMenu, FiChevronDown } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions, useCreateManualSubscription, useDeleteSubscription } from '../../hooks/useSubscriptions';
+import { useAllPlans } from '../../hooks/usePlans';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
 import Sidebar from '../Shared/Sidebar';
+import ConfirmModal from '../Shared/ConfirmModal';
 import '../Dashboard/Dashboard.css';
 
 const Subscriptions = () => {
@@ -17,48 +19,72 @@ const Subscriptions = () => {
   const [page, setPage] = useState(0);
   const size = 20;
   
-  const { data: subsData, isLoading, error } = useSubscriptions(page, size);
-  const createSubMutation = useCreateManualSubscription();
-  const deleteSubMutation = useDeleteSubscription();
-
-  const [showModal, setShowModal] = useState(false);
-  const [newSub, setNewSub] = useState({ deviceId: '', plan: 'ANNUAL' });
-
   // Filter states
   const [filters, setFilters] = useState({
     deviceId: '',
     plan: '',
     status: ''
   });
+  
+  const { data: subsData, isLoading, error } = useSubscriptions(page, size, filters);
+  const createSubMutation = useCreateManualSubscription();
+  const deleteSubMutation = useDeleteSubscription();
+  const { data: allPlans = [], isLoading: isPlansLoading } = useAllPlans();
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalPlanOpen, setModalPlanOpen] = useState(false);
+  const [newSub, setNewSub] = useState({ deviceId: '', planId: '', plan: '' });
+  const [confirmState, setConfirmState] = useState({ show: false, subId: null });
+
+  // Reset to page 0 whenever filters change (required for server-side filtering)
+  useEffect(() => {
+    setPage(0);
+  }, [filters]);
 
   const handleFilterChange = (column, value) => {
     setFilters(prev => ({ ...prev, [column]: value }));
   };
 
-  const filteredSubs = useMemo(() => {
-    if (!subsData?.content) return [];
-    return subsData.content.filter(sub => {
-      return (
-        sub.deviceId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
-        (filters.plan === '' || sub.plan === filters.plan) &&
-        (filters.status === '' || sub.status === filters.status)
-      );
+  const subscriptions = useMemo(() => {
+    const raw = subsData?.content || [];
+    if (!filters.deviceId && !filters.plan && !filters.status) return raw;
+    
+    return raw.filter(sub => {
+      // Case-insensitive partial match for deviceId
+      const matchDevice = !filters.deviceId || 
+        (sub.deviceId || '').toLowerCase().includes(filters.deviceId.toLowerCase());
+      // Case-insensitive exact match for plan
+      const planVal = sub.plan || sub.planName || sub.subscriptionPlan || '';
+      const matchPlan = !filters.plan || 
+        planVal.toLowerCase() === filters.plan.toLowerCase();
+      // Case-insensitive exact match for status
+      const matchStatus = !filters.status || 
+        (sub.status || '').toLowerCase() === filters.status.toLowerCase();
+      return matchDevice && matchPlan && matchStatus;
     });
   }, [subsData, filters]);
 
   const handleCreate = (e) => {
     e.preventDefault();
-    createSubMutation.mutate(newSub, {
+    // Backend expects: { deviceId, plan } where plan is the plan name/type
+    createSubMutation.mutate({ deviceId: newSub.deviceId, plan: newSub.plan }, {
       onSuccess: () => {
         setShowModal(false);
-        setNewSub({ deviceId: '', plan: 'ANNUAL' });
+        setNewSub({ deviceId: '', planId: '', plan: '' });
+        setModalPlanOpen(false);
       }
     });
   };
 
   const handleDelete = (id) => {
-    if(window.confirm("Are you sure you want to delete this subscription?")) {
-      deleteSubMutation.mutate(id);
+    setConfirmState({ show: true, subId: id });
+  };
+
+  const executeDelete = () => {
+    if (confirmState.subId) {
+      deleteSubMutation.mutate(confirmState.subId, {
+        onSuccess: () => setConfirmState({ show: false, subId: null })
+      });
     }
   };
 
@@ -166,17 +192,16 @@ const Subscriptions = () => {
                   alignRight
                 />
               </div>
-              <div className="th-cell align-center">ACTIONS</div>
             </div>
 
             {isLoading ? (
               <div className="text-center my-5"><Spinner animation="border" variant="info" /></div>
             ) : error ? (
               <Alert variant="danger" className="m-3">Error loading subscriptions: {error.message}</Alert>
-            ) : filteredSubs.length === 0 ? (
-              <div className="p-4 text-center text-white">No matching subscriptions found.</div>
+            ) : subscriptions.length === 0 ? (
+              <div className="p-4 text-center text-white">No subscriptions found.</div>
             ) : (
-              filteredSubs.map((sub, index) => (
+              subscriptions.map((sub, index) => (
                 <motion.div 
                   key={sub.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -188,7 +213,7 @@ const Subscriptions = () => {
                   <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={sub.deviceId}>
                     {sub.deviceId}
                   </div>
-                  <div className="td-cell align-left">{sub.plan}</div>
+                  <div className="td-cell align-left">{sub.plan || sub.planName || sub.subscriptionPlan}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
                   <div className="td-cell align-right fw-bold text-success">€{sub.amount || '0.00'}</div>
@@ -197,18 +222,13 @@ const Subscriptions = () => {
                       {sub.status}
                     </Badge>
                   </div>
-                  <div className="td-cell align-center">
-                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(sub.id)} title="Delete">
-                      <FiTrash2 />
-                    </Button>
-                  </div>
                 </motion.div>
               ))
             )}
           </div>
           
-          {/* Pagination Controls */}
-          {subsData && subsData.totalPages > 1 && (
+          {/* Pagination Controls — hidden when filters are active (all data loaded) */}
+          {!filters.deviceId && !filters.plan && !filters.status && subsData && subsData.totalPages > 1 && (
             <div className="d-flex justify-content-between align-items-center mt-3">
               <Button 
                 variant="outline-info" 
@@ -230,11 +250,11 @@ const Subscriptions = () => {
         </div>
       </div>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="dark-modal">
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="dark-modal" size="lg">
         <Modal.Header closeButton className="border-secondary bg-dark text-white">
           <Modal.Title>Manual Subscription</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="bg-dark text-white">
+        <Modal.Body className="bg-dark text-white" style={{ minHeight: '400px' }}>
           <Form onSubmit={handleCreate}>
             <Form.Group className="mb-3">
               <Form.Label>Device ID (UUID)</Form.Label>
@@ -246,29 +266,72 @@ const Subscriptions = () => {
                 className="bg-secondary text-white border-0"
               />
             </Form.Group>
-            <Form.Group className="mb-4">
-              <Form.Label>Plan</Form.Label>
-              <Form.Select 
-                value={newSub.plan} 
-                onChange={e => setNewSub({...newSub, plan: e.target.value})}
-                className="bg-secondary text-white border-0"
-              >
-                <option value="ANNUAL">Annual</option>
-                <option value="LIFETIME">Lifetime</option>
-              </Form.Select>
-            </Form.Group>
+            <div className="custom-modal-select-wrapper mb-4">
+              <Form.Label className="text-white-50 small mb-2">Select Subscription Plan</Form.Label>
+              {isPlansLoading ? (
+                <div className="text-center py-3"><Spinner animation="border" size="sm" variant="info" /></div>
+              ) : (
+                <div className={`custom-modal-select ${modalPlanOpen ? 'active' : ''}`} onClick={() => setModalPlanOpen(!modalPlanOpen)}>
+                  <span className={newSub.planId ? 'text-white' : 'text-white-50'}>
+                    {newSub.plan || 'Choose a plan...'}
+                  </span>
+                  <FiChevronDown className={`ms-auto transition-03 ${modalPlanOpen ? 'rotate-180' : ''}`} />
+                  
+                  <AnimatePresence>
+                    {modalPlanOpen && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="custom-modal-options"
+                      >
+                        {allPlans.filter(p => p.active).map(plan => (
+                          <div 
+                            key={plan.id}
+                            className={`modal-option ${newSub.planId === plan.id ? 'selected' : ''}`}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setNewSub({...newSub, planId: plan.id, plan: plan.name}); 
+                              setModalPlanOpen(false); 
+                            }}
+                          >
+                            <div className="fw-bold">{plan.name}</div>
+                            <div className="small" style={{ opacity: 0.6 }}>{plan.durationDays} days · €{plan.price}</div>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
             
             {createSubMutation.isError && (
               <Alert variant="danger py-2">{createSubMutation.error?.response?.data?.message || "Failed to create"}</Alert>
             )}
 
-            <Button variant="info" type="submit" className="w-100 text-white" disabled={createSubMutation.isPending}>
+            <Button 
+              variant="info" 
+              type="submit" 
+              className="w-100 text-white" 
+              disabled={createSubMutation.isPending || !newSub.plan || !newSub.deviceId}
+            >
               {createSubMutation.isPending ? "Creating..." : "Create Subscription"}
             </Button>
           </Form>
         </Modal.Body>
       </Modal>
 
+      <ConfirmModal 
+        show={confirmState.show}
+        onHide={() => setConfirmState({ show: false, subId: null })}
+        onConfirm={executeDelete}
+        title="Delete Subscription?"
+        message="Are you sure you want to delete this subscription? This action is permanent and the user will lose access immediately."
+        confirmText="Delete"
+        variant="danger"
+        isLoading={deleteSubMutation.isPending}
+      />
     </div>
   );
 };

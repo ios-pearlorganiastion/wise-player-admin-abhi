@@ -22,8 +22,8 @@ const Payments = () => {
 
   // Filter states
   const [filters, setFilters] = useState({
-    transactionId: '',
-    method: '',
+    paymentId: '',
+    deviceId: '',
     status: ''
   });
 
@@ -34,11 +34,11 @@ const Payments = () => {
   const filteredPayments = useMemo(() => {
     if (!paymentsData?.content) return [];
     return paymentsData.content.filter(payment => {
-      const id = payment.paypalOrderId || payment.paymentId || payment.id || '';
-      const method = payment.paypalOrderId ? 'PayPal' : (payment.paymentMethod || 'N/A');
+      const pId = payment.paymentId || '';
+      const dId = payment.deviceId || '';
       return (
-        id.toLowerCase().includes(filters.transactionId.toLowerCase()) &&
-        (filters.method === '' || method.toLowerCase().includes(filters.method.toLowerCase())) &&
+        pId.toLowerCase().includes(filters.paymentId.toLowerCase()) &&
+        dId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
         (filters.status === '' || payment.status === filters.status)
       );
     });
@@ -144,16 +144,16 @@ const Payments = () => {
           
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
             <div className="table-header-row payment-table-grid">
-              <div className="th-cell align-left">ID</div>
               <div className="th-cell align-left">
-                DEVICE ID <ColumnFilter column="transactionId" onFilterChange={handleFilterChange} placeholder="TX ID" />
+                PAYMENT ID <ColumnFilter column="paymentId" onFilterChange={handleFilterChange} placeholder="ID" />
               </div>
-              <div className="th-cell align-left">RESELLER</div>
+              <div className="th-cell align-left">
+                DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="Device ID" />
+              </div>
+              <div className="th-cell align-left">PLAN</div>
               <div className="th-cell align-right">AMOUNT</div>
-              <div className="th-cell align-left">
-                METHOD <ColumnFilter column="method" onFilterChange={handleFilterChange} placeholder="Method" />
-              </div>
               <div className="th-cell align-left">DATE</div>
+              <div className="th-cell align-left">TIME</div>
               <div className="th-cell align-center">
                 STATUS
                 <ColumnFilter 
@@ -171,7 +171,6 @@ const Payments = () => {
                   alignRight
                 />
               </div>
-              <div className="th-cell align-center">ACTIONS</div>
             </div>
 
             {isPaymentsLoading ? (
@@ -183,31 +182,34 @@ const Payments = () => {
             ) : (
               filteredPayments.map((payment, index) => (
                 <motion.div 
-                  key={payment.id}
+                  key={payment.paymentId}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center payment-table-grid"
                 >
-                  <div className="td-cell align-left text-white-50">#{payment.id}</div>
-                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={payment.paypalOrderId || payment.paymentId || payment.id}>
-                    {payment.paypalOrderId || (payment.paymentId ? payment.paymentId : 'N/A')}
+                  <div className="td-cell align-left text-white-50 small wrap-text" title={payment.paymentId}>
+                    {payment.paymentId}
                   </div>
-                  <div className="td-cell align-left">--</div>
+                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={payment.deviceId}>
+                    {payment.deviceId}
+                  </div>
+                  <div className="td-cell align-left">
+                    <Badge bg="dark" className="border border-secondary text-info">
+                      {payment.plan || payment.planName || payment.subscriptionPlan || 'N/A'}
+                    </Badge>
+                  </div>
                   <div className="td-cell align-right fw-bold text-success">{payment.amount} €</div>
-                  <div className="td-cell align-left">{payment.paypalOrderId ? 'PayPal' : (payment.paymentMethod || 'N/A')}</div>
                   <div className="td-cell align-left text-white">
                     {new Date(payment.createdAt).toLocaleDateString()}
-                    <br/>
-                    <small className="text-white-50">{new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+                  </div>
+                  <div className="td-cell align-left text-white-50 small">
+                    {new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                   <div className="td-cell align-center">
                     <Badge className={`status-pill ${payment.status?.toLowerCase() || 'pending'}`}>
                       {payment.status}
                     </Badge>
-                  </div>
-                  <div className="td-cell align-center">
-                    {/* Actions if needed */}
                   </div>
                 </motion.div>
               ))

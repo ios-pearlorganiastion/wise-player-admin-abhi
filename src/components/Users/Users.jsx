@@ -7,6 +7,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
 import Pagination from '../Shared/Pagination';
 import Sidebar from '../Shared/Sidebar';
+import ConfirmModal from '../Shared/ConfirmModal';
 import '../Dashboard/Dashboard.css';
 
 const Users = () => {
@@ -19,6 +20,8 @@ const Users = () => {
   
   const { data: devicesData, isLoading, error } = useDevices(page, size);
 
+  const [confirmState, setConfirmState] = useState({ show: false, device: null });
+
   const filteredDevices = useMemo(() => {
     if (!devicesData?.content) return [];
     return devicesData.content.filter(dev => 
@@ -26,6 +29,20 @@ const Users = () => {
     );
   }, [devicesData, accountFilter]);
   const updateStatusMutation = useUpdateDeviceStatus();
+
+  const handleToggleStatus = (dev) => {
+    setConfirmState({ show: true, device: dev });
+  };
+
+  const executeToggleStatus = () => {
+    const { device } = confirmState;
+    if (device) {
+      updateStatusMutation.mutate(
+        { deviceId: device.deviceId, status: device.deviceStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' },
+        { onSuccess: () => setConfirmState({ show: false, device: null }) }
+      );
+    }
+  };
 
   return (
     <div className="dashboard-container">
@@ -132,7 +149,7 @@ const Users = () => {
                     <Button 
                       variant={dev.deviceStatus === "ACTIVE" ? "outline-danger" : "outline-success"} 
                       size="sm"
-                      onClick={() => updateStatusMutation.mutate({ deviceId: dev.deviceId, status: dev.deviceStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' })}
+                      onClick={() => handleToggleStatus(dev)}
                     >
                       <FiShield className="me-1" />
                       {dev.deviceStatus === "ACTIVE" ? "Deactivate" : "Activate"}
@@ -150,6 +167,17 @@ const Users = () => {
           />
         </div>
       </div>
+
+      <ConfirmModal 
+        show={confirmState.show}
+        onHide={() => setConfirmState({ show: false, device: null })}
+        onConfirm={executeToggleStatus}
+        title={confirmState.device?.deviceStatus === 'ACTIVE' ? 'Deactivate User?' : 'Activate User?'}
+        message={`Are you sure you want to ${confirmState.device?.deviceStatus === 'ACTIVE' ? 'deactivate' : 'activate'} this user account? This will affect their ability to access the platform.`}
+        confirmText={confirmState.device?.deviceStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+        variant={confirmState.device?.deviceStatus === 'ACTIVE' ? 'danger' : 'info'}
+        isLoading={updateStatusMutation.isPending}
+      />
     </div>
   );
 };
