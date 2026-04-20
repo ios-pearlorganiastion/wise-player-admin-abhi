@@ -64,3 +64,10 @@ export const REPORT_ENDPOINTS = {
   SUBSCRIPTIONS: "/api/admin/reports/subscriptions",
   RESELLERS: "/api/admin/reports/resellers",
 };
+
+// Support Ticket Management
+export const SUPPORT_TICKETS_ENDPOINTS = {
+  LIST: "/api/admin/support/tickets", // ?status=OPEN&page=0&size=10
+  GET_BY_ID: (id: string) => `/api/admin/support/tickets/${id}`,
+  UPDATE_STATUS: (id: string) => `/api/admin/support/tickets/${id}/status`,
+};

@@ -36,6 +36,7 @@ export interface DashboardStats {
   totalRevenue: number;
   activeSubscriptions: number;
   pendingActivations?: number;
+  openSupportTickets?: number;
   // Note: Add precise fields based on actual API payload, using generic placeholders if needed
   [key: string]: number | string | boolean | undefined; 
 }
@@ -171,4 +172,24 @@ export interface ResellerReport {
   resellerName: string;
   totalActivations: number;
   remainingCredits: number;
+}
+
+// Support Ticket Types
+export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+
+export interface SupportTicket {
+  id: string; // UUID
+  firstName: string;
+  lastName: string;
+  email: string;
+  macAddress: string;
+  inquiryType: string;
+  message: string;
+  attachmentUrl?: string;
+  status: TicketStatus;
+  createdAt: string;
+}
+
+export interface UpdateTicketStatusRequest {
+  status: TicketStatus;
 }

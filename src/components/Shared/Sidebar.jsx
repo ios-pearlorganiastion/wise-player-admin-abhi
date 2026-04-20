@@ -1,14 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiUsers, FiDollarSign, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings } from 'react-icons/fi';
+import { FiPlay, FiUsers, FiDollarSign, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy } from 'react-icons/fi';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
+import { useSupportTicketsCount } from '../../hooks/useSupportTickets';
 import './ColumnFilter.css'; // Reusing some shared styles or we can create Sidebar.css
 
 const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { data: stats } = useDashboardStats();
+  const { data: openTicketsCount } = useSupportTicketsCount('OPEN');
 
   React.useEffect(() => {
     if (stats) {
@@ -25,9 +27,10 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
     { id: 'devices', icon: <FiUsers />, path: '/devices', label: 'Devices' },
     { id: 'payments', icon: <FiDollarSign />, path: '/payments', label: 'Payments' },
     { id: 'subscriptions', icon: <FiTrendingUp />, path: '/subscriptions', label: 'Subscriptions' },
-    { id: 'activation-requests', icon: <FiCheckSquare />, path: '/activation-requests', label: 'Activation', showBadge: true },
+    { id: 'activation-requests', icon: <FiCheckSquare />, path: '/activation-requests', label: 'Activation', showBadge: true, badgeKey: 'pendingActivations' },
     { id: 'reports', icon: <FiBarChart2 />, path: '/reports', label: 'Reports' },
     { id: 'users', icon: <FiUserCheck />, path: '/users', label: 'Users' },
+    { id: 'support-tickets', icon: <FiLifeBuoy />, path: '/support-tickets', label: 'Support', showBadge: true, badgeKey: 'openSupportTickets' },
   ];
 
   const superAdminItems = [
@@ -59,8 +62,12 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
-              {item.showBadge && stats?.pendingActivations > 0 && (
-                <span className="nav-badge animate-pulse">{stats.pendingActivations}</span>
+              {item.showBadge && (
+                (item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats?.[item.badgeKey]) > 0
+              ) && (
+                <span className="nav-badge animate-pulse">
+                  {item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats[item.badgeKey]}
+                </span>
               )}
             </div>
           ))}

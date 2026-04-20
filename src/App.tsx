@@ -14,6 +14,7 @@ import Plans from './components/Plans/Plans';
 import ActivationRequests from './components/RechargeRequests/RechargeRequests';
 import Reports from './components/Reports/Reports';
 import Users from './components/Users/Users';
+import SupportTickets from './components/SupportTickets/SupportTickets';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
               <Route path="/users" element={<Users />} />
               <Route path="/plans" element={<Plans />} />
               <Route path="/resellers" element={<Resellers />} />
+              <Route path="/support-tickets" element={<SupportTickets />} />
               <Route path="/admin-management" element={<AdminManagement />} />
             </Route>
           </Routes>
