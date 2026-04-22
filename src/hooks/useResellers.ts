@@ -15,6 +15,18 @@ export const useResellers = (page: number, size: number) => {
   });
 };
 
+export const useResellerStats = (id: string | undefined) => {
+  return useQuery<any, Error>({
+    queryKey: ["resellerStats", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await apiClient.get<any>(RESELLER_ENDPOINTS.GET_STATS(id));
+      return data;
+    },
+    enabled: !!id,
+  });
+};
+
 export const useToggleResellerStatus = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({

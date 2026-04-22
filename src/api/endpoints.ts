@@ -35,6 +35,7 @@ export const SUBSCRIPTIONS_ENDPOINTS = {
 export const RESELLER_ENDPOINTS = {
   LIST: "/api/admin/resellers",
   GET_BY_ID: (id: string) => `/api/admin/resellers/${id}`,
+  GET_STATS: (id: string) => `/api/admin/resellers/${id}/stats`,
   TOGGLE_STATUS: (id: string) => `/api/admin/resellers/${id}/status`,
   CREATE: "/api/reseller/register",
   UPDATE: (id: string) => `/api/admin/resellers/${id}`,

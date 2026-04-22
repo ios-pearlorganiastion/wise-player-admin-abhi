@@ -1,20 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUserPlus, FiActivity, FiShield, FiLogOut, FiEdit2, FiMail, FiUser, FiCalendar, FiMenu } from 'react-icons/fi';
+import { FiUserPlus, FiActivity, FiShield, FiLogOut, FiEdit2, FiMail, FiUser, FiCalendar, FiMenu, FiChevronRight } from 'react-icons/fi';
 import { useResellers, useToggleResellerStatus, useCreateReseller, useUpdateReseller } from '../../hooks/useResellers';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
 import Pagination from '../Shared/Pagination';
 import Sidebar from '../Shared/Sidebar';
 import ConfirmModal from '../Shared/ConfirmModal';
-import '../Dashboard/Dashboard.css';
+import ResellerDeepDive from './ResellerDeepDive';
+import './Resellers.css';
 
 const Resellers = () => {
   const { logout, user } = useAuthContext();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
+  const [selectedReseller, setSelectedReseller] = useState(null);
   const size = 20;
   
   const { data: resellersData, isLoading, error } = useResellers(page, size);
@@ -49,14 +51,15 @@ const Resellers = () => {
     });
   }, [resellersData, usernameFilter, nameFilter, emailFilter]);
 
-  const handleOpenModal = (reseller = null) => {
+  const handleOpenModal = (e, reseller = null) => {
+    if (e) e.stopPropagation(); // Prevent row click from triggering
     if (reseller) {
       setEditingReseller(reseller);
       setFormData({
         username: reseller.username,
         fullName: reseller.fullName,
         email: reseller.email || '',
-        password: '' // Don't populate password
+        password: '' 
       });
     } else {
       setEditingReseller(null);
@@ -89,7 +92,8 @@ const Resellers = () => {
     }
   };
 
-  const handleStatusToggle = (reseller) => {
+  const handleStatusToggle = (e, reseller) => {
+    if (e) e.stopPropagation();
     setConfirmState({ show: true, reseller });
   };
 
@@ -120,7 +124,9 @@ const Resellers = () => {
               <FiMenu />
             </button>
             <div className="welcome-text">
-              <h1>Manage <span className="highlight">Resellers</span></h1>
+              <h1>
+                Manage <span className="highlight">Resellers</span>
+              </h1>
               <p>Admin control for reseller and sub-reseller accounts</p>
             </div>
           </div>
@@ -162,100 +168,126 @@ const Resellers = () => {
           </div>
         </header>
 
-        <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
-          <div className="d-flex gap-3 align-items-center">
-            <h3 className="section-title m-0">Reseller Accounts</h3>
-          </div>
-          <Button 
-            variant="danger" 
-            className="d-flex align-items-center gap-2 fw-bold px-4"
-            style={{ borderRadius: '12px' }}
-            onClick={() => handleOpenModal()}
-          >
-            <FiUserPlus /> Add Reseller
-          </Button>
-        </div>
-
-        <div className="recent-section">
-          {isLoading ? (
-            <div className="text-center my-5"><Spinner animation="border" variant="danger" /></div>
-          ) : error ? (
-            <Alert variant="danger" className="m-3">Error loading resellers: {error.message}</Alert>
-          ) : (
-            <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-              <div className="table-header-row" style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px' }}>
-                <div className="th-cell">
-                  USERNAME
-                  <ColumnFilter column="username" onFilterChange={(_, val) => setUsernameFilter(val)} placeholder="Username" />
+        <AnimatePresence mode="wait">
+          {!selectedReseller ? (
+            <motion.div 
+              key="list-view"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <div className="d-flex justify-content-between align-items-center mt-4 mb-4">
+                <div className="d-flex gap-3 align-items-center">
+                  <h3 className="section-title m-0">Reseller Accounts</h3>
                 </div>
-                <div className="th-cell">
-                  FULL NAME
-                  <ColumnFilter column="name" onFilterChange={(_, val) => setNameFilter(val)} placeholder="Name" />
-                </div>
-                <div className="th-cell">
-                  EMAIL
-                  <ColumnFilter column="email" onFilterChange={(_, val) => setEmailFilter(val)} placeholder="Email" />
-                </div>
-                <div className="th-cell text-center">USERS</div>
-                <div className="th-cell">CREATED</div>
-                <div className="th-cell text-center">ACTION</div>
+                <Button 
+                  variant="danger" 
+                  className="d-flex align-items-center gap-2 fw-bold px-4"
+                  style={{ borderRadius: '12px', height: '45px' }}
+                  onClick={(e) => handleOpenModal(e)}
+                >
+                  <FiUserPlus /> Add Reseller
+                </Button>
               </div>
 
-              {filteredResellers.map((reseller, index) => (
-                <motion.div 
-                  key={reseller.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="table-data-row align-items-center"
-                  style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px' }}
-                >
-                  <div className="td-cell fw-bold text-white px-2">
-                    <FiUser className="text-danger me-2" />
-                    {reseller.username}
-                    <div className="small text-white-50 ms-4">{reseller.role}</div>
-                  </div>
-                  <div className="td-cell text-white">{reseller.fullName}</div>
-                  <div className="td-cell text-white-50 small">{reseller.email || 'N/A'}</div>
-                  <div className="td-cell text-center">
-                    <Badge bg="dark" className="border border-secondary text-info px-3">
-                      {reseller.totalUsers || 0}
-                    </Badge>
-                  </div>
-                  <div className="td-cell text-white-50 small">
-                    <FiCalendar className="me-1" />
-                    {reseller.createdAt ? new Date(reseller.createdAt).toLocaleDateString() : 'N/A'}
-                  </div>
-                  <div className="td-cell text-center">
-                    <div className="d-flex justify-content-center gap-2">
-                      <Button variant="outline-info" size="sm" onClick={() => handleOpenModal(reseller)}>
-                        <FiEdit2 />
-                      </Button>
-                      <Button 
-                        variant={reseller.active ? "outline-danger" : "outline-success"} 
-                        size="sm"
-                        disabled={toggleStatusMutation.isPending}
-                        onClick={() => handleStatusToggle(reseller)}
-                      >
-                        <FiShield />
-                      </Button>
+              <div className="recent-section p-0">
+                {isLoading ? (
+                  <div className="text-center my-5"><Spinner animation="border" variant="danger" /></div>
+                ) : error ? (
+                  <Alert variant="danger" className="m-3">Error loading resellers: {error.message}</Alert>
+                ) : (
+                  <div className="custom-table-wrapper" style={{ overflowX: 'auto', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="table-header-row" style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px', background: 'rgba(255,255,255,0.03)' }}>
+                      <div className="th-cell">
+                        USERNAME
+                        <ColumnFilter column="username" onFilterChange={(_, val) => setUsernameFilter(val)} placeholder="Filter" />
+                      </div>
+                      <div className="th-cell">
+                        FULL NAME
+                        <ColumnFilter column="name" onFilterChange={(_, val) => setNameFilter(val)} placeholder="Filter" />
+                      </div>
+                      <div className="th-cell">
+                        EMAIL
+                        <ColumnFilter column="email" onFilterChange={(_, val) => setEmailFilter(val)} placeholder="Filter" />
+                      </div>
+                      <div className="th-cell text-center">USERS</div>
+                      <div className="th-cell">CREATED</div>
+                      <div className="th-cell text-center">ACTION</div>
                     </div>
+
+                    {filteredResellers.map((reseller, index) => (
+                      <motion.div 
+                        key={reseller.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="table-data-row align-items-center mb-1"
+                        style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px', cursor: 'pointer' }}
+                        onClick={() => setSelectedReseller(reseller)}
+                      >
+                        <div className="td-cell fw-bold text-white px-2">
+                          <div className="d-flex align-items-center gap-2">
+                            <div className="stat-icon-box bg-dark text-danger p-1 rounded">
+                              <FiUser size={14} />
+                            </div>
+                            <div>
+                              {reseller.username}
+                              <div className="small text-white-50 tiny">{reseller.role}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="td-cell text-white">{reseller.fullName}</div>
+                        <div className="td-cell text-white-50 small">{reseller.email || 'N/A'}</div>
+                        <div className="td-cell text-center">
+                          <Badge bg="dark" className="border border-secondary text-info px-3">
+                            {reseller.totalUsers || 0}
+                          </Badge>
+                        </div>
+                        <div className="td-cell text-white-50 small">
+                          <FiCalendar className="me-1" />
+                          {reseller.createdAt ? new Date(reseller.createdAt).toLocaleDateString() : 'N/A'}
+                        </div>
+                        <div className="td-cell text-center">
+                          <div className="d-flex justify-content-center gap-2">
+                            <Button variant="outline-info" size="sm" onClick={(e) => handleOpenModal(e, reseller)}>
+                              <FiEdit2 />
+                            </Button>
+                            <Button 
+                              variant={reseller.active ? "outline-danger" : "outline-success"} 
+                              size="sm"
+                              disabled={toggleStatusMutation.isPending}
+                              onClick={(e) => handleStatusToggle(e, reseller)}
+                            >
+                              <FiShield />
+                            </Button>
+                            <div className="text-white-50 ms-1 d-flex align-items-center">
+                               <FiChevronRight />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                    
+                    {filteredResellers.length === 0 && (
+                      <div className="p-5 text-center text-white-50">No matching resellers found.</div>
+                    )}
                   </div>
-                </motion.div>
-              ))}
-              
-              {filteredResellers.length === 0 && (
-                <div className="p-5 text-center text-white-50">No matching resellers found.</div>
-              )}
-            </div>
+                )}
+                
+                <Pagination 
+                  currentPage={page} 
+                  totalPages={resellersData?.totalPages || 0} 
+                  onPageChange={setPage} 
+                />
+              </div>
+            </motion.div>
+          ) : (
+            <ResellerDeepDive 
+              reseller={selectedReseller} 
+              onBack={() => setSelectedReseller(null)} 
+            />
           )}
-          
-          <Pagination 
-            currentPage={page} 
-            totalPages={resellersData?.totalPages || 0} 
-            onPageChange={setPage} 
-          />
-        </div>
+        </AnimatePresence>
       </div>
 
       {/* Create/Edit Modal */}
