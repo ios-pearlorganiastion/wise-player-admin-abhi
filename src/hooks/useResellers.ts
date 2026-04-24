@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../api/axios";
 import { RESELLER_ENDPOINTS } from "../api/endpoints";
-import { PaginatedResponse, Reseller } from "../types/api.types";
+import { PaginatedResponse, Reseller, ResellerAnalytics, SubReseller } from "../types/api.types";
 
 export const useResellers = (page: number, size: number) => {
   return useQuery<PaginatedResponse<Reseller>, Error>({
@@ -21,6 +21,34 @@ export const useResellerStats = (id: string | undefined) => {
     queryFn: async () => {
       if (!id) return null;
       const { data } = await apiClient.get<any>(RESELLER_ENDPOINTS.GET_STATS(id));
+      return data;
+    },
+    enabled: !!id,
+  });
+};
+
+export const useResellerAnalytics = (id: string | undefined, period: string = 'WEEK', startDate: string) => {
+  return useQuery<ResellerAnalytics[], Error>({
+    queryKey: ["resellerAnalytics", id, period, startDate],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data } = await apiClient.get<ResellerAnalytics[]>(
+        `${RESELLER_ENDPOINTS.GET_ANALYTICS(id)}?period=${period}&startDate=${startDate}`
+      );
+      return data;
+    },
+    enabled: !!id && !!startDate,
+  });
+};
+
+export const useSubResellers = (id: string | undefined, page: number = 0, size: number = 20) => {
+  return useQuery<PaginatedResponse<SubReseller>, Error>({
+    queryKey: ["subResellers", id, page, size],
+    queryFn: async () => {
+      if (!id) return { content: [], totalElements: 0, totalPages: 0 } as any;
+      const { data } = await apiClient.get<PaginatedResponse<SubReseller>>(
+        `${RESELLER_ENDPOINTS.GET_SUB_RESELLERS(id)}?page=${page}&size=${size}`
+      );
       return data;
     },
     enabled: !!id,

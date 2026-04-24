@@ -36,6 +36,8 @@ export const RESELLER_ENDPOINTS = {
   LIST: "/api/admin/resellers",
   GET_BY_ID: (id: string) => `/api/admin/resellers/${id}`,
   GET_STATS: (id: string) => `/api/admin/resellers/${id}/stats`,
+  GET_ANALYTICS: (id: string) => `/api/admin/resellers/${id}/analytics`,
+  GET_SUB_RESELLERS: (id: string) => `/api/admin/resellers/${id}/sub-resellers`,
   TOGGLE_STATUS: (id: string) => `/api/admin/resellers/${id}/status`,
   CREATE: "/api/reseller/register",
   UPDATE: (id: string) => `/api/admin/resellers/${id}`,

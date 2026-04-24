@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Row, Col, Badge, Button, Table, Spinner } from 'react-bootstrap';
 import { 
@@ -9,22 +9,32 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, AreaChart, Area 
 } from 'recharts';
-import { useResellerStats } from '../../hooks/useResellers';
+import { useResellerStats, useResellerAnalytics, useSubResellers } from '../../hooks/useResellers';
 import './Resellers.css';
 
 const ResellerDeepDive = ({ reseller, onBack }) => {
-  const { data: stats, isLoading: isStatsLoading } = useResellerStats(reseller?.id);
+  const [period, setPeriod] = useState('WEEK');
+  
+  const startDate = useMemo(() => {
+    const d = new Date();
+    const daysToSubtract = period === 'WEEK' ? 7 : 30;
+    d.setDate(d.getDate() - daysToSubtract);
+    return d.toISOString().split('T')[0];
+  }, [period]);
 
-  // Mock data for analytics - in a real app, this would come from useResellerReports
-  const analyticsData = useMemo(() => [
-    { name: 'Mon', activations: 12, revenue: 240 },
-    { name: 'Tue', activations: 19, revenue: 380 },
-    { name: 'Wed', activations: 15, revenue: 300 },
-    { name: 'Thu', activations: 22, revenue: 440 },
-    { name: 'Fri', activations: 30, revenue: 600 },
-    { name: 'Sat', activations: 25, revenue: 500 },
-    { name: 'Sun', activations: 18, revenue: 360 },
-  ], []);
+  const { data: stats, isLoading: isStatsLoading } = useResellerStats(reseller?.id);
+  const { data: analyticsData, isLoading: isAnalyticsLoading } = useResellerAnalytics(reseller?.id, period, startDate);
+  const [subPage, setSubPage] = useState(0);
+  const { data: subResellersData, isLoading: isSubLoading } = useSubResellers(reseller?.id, subPage, 10);
+
+  const formattedAnalytics = useMemo(() => {
+    if (!analyticsData) return [];
+    return analyticsData.map(item => ({
+      name: new Date(item.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }),
+      activations: item.activations,
+      revenue: item.revenue
+    }));
+  }, [analyticsData]);
 
   if (!reseller) return null;
 
@@ -56,10 +66,6 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
             </span>
           </div>
         </div>
-        <div className="d-flex gap-2">
-           <Button variant="outline-danger" className="px-4">Manage Credits</Button>
-           <Button variant="danger" className="px-4">Edit Profile</Button>
-        </div>
       </div>
 
       {/* KPI Section */}
@@ -67,7 +73,7 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
         <div className="glass-card insight-card">
           <div className="insight-label">Total Users</div>
           <div className="insight-value">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.totalUsers || reseller.totalUsers || 0)}</div>
-          <div className="text-success small"><FiTrendingUp /> {stats?.growthPercentage ? `+${stats.growthPercentage}%` : '+0%'} this month</div>
+          <div className="text-success small"><FiTrendingUp /> {stats?.growthPercentage ? `${stats.growthPercentage > 0 ? '+' : ''}${stats.growthPercentage}%` : '+0%'} this month</div>
         </div>
         <div className="glass-card insight-card">
           <div className="insight-label">Active Subscriptions</div>
@@ -76,13 +82,13 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
         </div>
         <div className="glass-card insight-card">
           <div className="insight-label">Remaining Credits</div>
-          <div className="insight-value">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.remainingCredits !== undefined ? `${stats.remainingCredits.toLocaleString()} ${stats.currency || ''}` : 0)}</div>
-          <div className="text-warning small"><FiCreditCard /> Balance Alert</div>
+          <div className="insight-value">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.remainingCredits !== undefined ? `${stats.remainingCredits.toLocaleString()}` : 0)}</div>
+          <div className="text-warning small"><FiCreditCard /> Partner Credits</div>
         </div>
         <div className="glass-card insight-card">
           <div className="insight-label">Partner Level</div>
           <div className="insight-value text-info">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.partnerLevel || 'Standard')}</div>
-          <div className="text-white-50 small">{stats?.totalRevenue !== undefined ? `Revenue: ${stats.totalRevenue.toLocaleString()} ${stats.currency || ''}` : 'Top 5% Reseller'}</div>
+          <div className="text-white-50 small">KPI Performance</div>
         </div>
       </div>
 
@@ -93,13 +99,32 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
             <div className="chart-header">
               <h3 className="section-title m-0">Activation Trends</h3>
               <div className="d-flex gap-2">
-                <Badge bg="dark" className="border border-secondary">Weekly</Badge>
-                <Badge bg="transparent" className="text-white-50">Monthly</Badge>
+                <Badge 
+                  bg={period === 'WEEK' ? 'dark' : 'transparent'} 
+                  className={`border border-secondary cursor-pointer ${period === 'WEEK' ? '' : 'text-white-50'}`}
+                  onClick={() => setPeriod('WEEK')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  Weekly
+                </Badge>
+                <Badge 
+                  bg={period === 'MONTH' ? 'dark' : 'transparent'} 
+                  className={`border border-secondary cursor-pointer ${period === 'MONTH' ? '' : 'text-white-50'}`}
+                  onClick={() => setPeriod('MONTH')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  Monthly
+                </Badge>
               </div>
             </div>
-            <div style={{ width: '100%', height: 300 }}>
+            <div style={{ width: '100%', height: 300 }} className="position-relative">
+              {isAnalyticsLoading && (
+                <div className="chart-overlay d-flex justify-content-center align-items-center">
+                  <Spinner animation="border" variant="danger" />
+                </div>
+              )}
               <ResponsiveContainer>
-                <AreaChart data={analyticsData}>
+                <AreaChart data={formattedAnalytics}>
                   <defs>
                     <linearGradient id="colorActivations" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#E50914" stopOpacity={0.3}/>
@@ -111,7 +136,7 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 12}}
+                    tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 10}}
                     dy={10}
                   />
                   <YAxis 
@@ -164,7 +189,7 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
                  <div className="stat-icon-box bg-dark p-2 rounded text-info"><FiActivity /></div>
                  <div>
                    <div className="text-white small fw-bold">Peak Activity</div>
-                   <div className="text-white-50 tiny">{stats?.peakActivationTime || 'Fridays (8pm - 11pm)'}</div>
+                   <div className="text-white-50 tiny">{stats?.peakActivationTime || 'Not Available'}</div>
                  </div>
                </li>
              </ul>
@@ -180,27 +205,60 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
             <div>RESELLER</div>
             <div>STATUS</div>
             <div>ACTIVE USERS</div>
-            <div className="text-end">ACTION</div>
           </div>
-          {/* Mock sub-resellers */}
-          {[1, 2, 3].map(i => (
-            <div key={i} className="sub-reseller-table-row text-white">
-              <div className="d-flex align-items-center gap-2">
-                <FiUser className="text-danger" />
-                <div>
-                  <div className="fw-bold">ElitePartner_{i}</div>
-                  <div className="text-white-50 tiny">Joined 2 months ago</div>
+          
+          {isSubLoading ? (
+            <div className="p-4 text-center"><Spinner animation="border" variant="danger" /></div>
+          ) : subResellersData?.content?.length > 0 ? (
+            <>
+              {subResellersData.content.map(sub => (
+                <div key={sub.id} className="sub-reseller-table-row text-white">
+                  <div className="d-flex align-items-center gap-2">
+                    <FiUser className="text-danger" />
+                    <div>
+                      <div className="fw-bold">{sub.username}</div>
+                      <div className="text-white-50 tiny">Joined {new Date(sub.joinedAt).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <Badge className={`badge-classic ${sub.status === 'ACTIVE' ? 'badge-active' : 'badge-inactive'}`}>
+                      {sub.status}
+                    </Badge>
+                  </div>
+                  <div className="fw-bold">{sub.activeUsers}</div>
                 </div>
-              </div>
-              <div>
-                <Badge className="badge-classic badge-active">Active</Badge>
-              </div>
-              <div className="fw-bold">142</div>
-              <div className="text-end">
-                <Button variant="link" className="text-info p-0">View Details</Button>
-              </div>
-            </div>
-          ))}
+              ))}
+
+              {/* Pagination Spot */}
+              {subResellersData.totalPages > 1 && (
+                <div className="d-flex justify-content-between align-items-center p-3 border-top border-secondary-subtle">
+                  <Button 
+                    variant="outline-info" 
+                    size="sm"
+                    className="px-4 fw-bold"
+                    disabled={subPage === 0}
+                    onClick={() => setSubPage(prev => Math.max(0, prev - 1))}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-white-50 small">
+                    Page <span className="text-white fw-bold">{subPage + 1}</span> of {subResellersData.totalPages}
+                  </span>
+                  <Button 
+                    variant="outline-info" 
+                    size="sm"
+                    className="px-4 fw-bold"
+                    disabled={subPage >= subResellersData.totalPages - 1}
+                    onClick={() => setSubPage(prev => prev + 1)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="p-5 text-center text-white-50">No sub-resellers managed by this account.</div>
+          )}
         </div>
       </div>
     </motion.div>

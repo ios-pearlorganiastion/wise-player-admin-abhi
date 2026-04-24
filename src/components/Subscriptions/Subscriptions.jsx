@@ -181,7 +181,6 @@ const Subscriptions = () => {
               </div>
               <div className="th-cell align-left">START DATE</div>
               <div className="th-cell align-left">END DATE</div>
-              <div className="th-cell align-right">AMOUNT</div>
               <div className="th-cell align-center">
                 STATUS
                 <ColumnFilter 
@@ -216,7 +215,6 @@ const Subscriptions = () => {
                   <div className="td-cell align-left">{sub.plan || sub.planName || sub.subscriptionPlan}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
-                  <div className="td-cell align-right fw-bold text-success">€{sub.amount || '0.00'}</div>
                   <div className="td-cell align-center">
                     <Badge className={`status-pill ${sub.status?.toLowerCase() || 'expired'}`}>
                       {sub.status}

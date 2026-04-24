@@ -129,6 +129,21 @@ export interface ResellerUpdateRequest {
   password?: string;
 }
 
+export interface ResellerAnalytics {
+  date: string;
+  activations: number;
+  revenue: number;
+}
+
+export interface SubReseller {
+  id: string;
+  username: string;
+  fullName: string;
+  activeUsers: number;
+  status: string;
+  joinedAt: string;
+}
+
 // Plan Types
 export interface Plan {
   id: string;
@@ -169,9 +184,13 @@ export interface SubscriptionReport {
 }
 
 export interface ResellerReport {
-  resellerName: string;
-  totalActivations: number;
-  remainingCredits: number;
+  id: string;
+  fullName: string;
+  username: string;
+  role: string;
+  totalUsers: number;
+  activeUsers: number;
+  pendingRequests: number;
 }
 
 // Support Ticket Types

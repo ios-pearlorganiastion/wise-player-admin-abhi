@@ -2,8 +2,6 @@
 
 .resellers-container {
   padding: 2rem;
-  background: radial-gradient(circle at top right, rgba(229, 9, 20, 0.05), transparent 40%),
-              radial-gradient(circle at bottom left, rgba(0, 212, 255, 0.05), transparent 40%);
   min-height: calc(100vh - 80px);
 }
 
@@ -108,7 +106,7 @@
 
 .sub-reseller-table-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2.5fr 1fr 1fr;
   padding: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   align-items: center;

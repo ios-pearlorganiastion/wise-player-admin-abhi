@@ -19,10 +19,13 @@ const Reports = () => {
   const [fromDate, setFromDate] = useState(thirtyDaysAgo);
   const [toDate, setToDate] = useState(today);
 
+  const [resellerPage, setResellerPage] = useState(0);
+  const resellerPageSize = 10;
+
   const { data: revenueData, isLoading: isRevLoading, error: revError } = useRevenueReport(fromDate, toDate);
   const { data: deviceData, isLoading: isDevLoading, error: devError } = useDeviceReport(fromDate, toDate);
   const { data: subData, isLoading: isSubLoading, error: subError } = useSubscriptionReport(fromDate, toDate);
-  const { data: resellerData, isLoading: isResLoading, error: resError } = useResellerReport();
+  const { data: resellerData, isLoading: isResLoading, error: resError } = useResellerReport(resellerPage, resellerPageSize);
 
   const COLORS = ['#00F5FF', '#9B5CFF', '#39FF14', '#FFD700', '#FF7F50'];
 
@@ -227,7 +230,9 @@ const Reports = () => {
                     <div className="th-cell align-right">ACTIVE USERS</div>
                     <div className="th-cell align-center">PENDING REQ</div>
                   </div>
-                  {(resellerData || []).map((res, i) => (
+                  {(resellerData?.content || [])
+                    .filter(res => res.role === 'RESELLER')
+                    .map((res, i) => (
                     <motion.div 
                       key={res.id || i} 
                       initial={{ opacity: 0, y: 10 }}
@@ -250,8 +255,35 @@ const Reports = () => {
                       </div>
                     </motion.div>
                   ))}
-                  {(!resellerData || resellerData.length === 0) && (
+                  {(!resellerData?.content || resellerData.content.length === 0) && (
                     <div className="p-4 text-center text-white-50">No reseller data available</div>
+                  )}
+
+                  {/* Pagination Controls */}
+                  {resellerData && resellerData.totalPages > 1 && (
+                    <div className="d-flex justify-content-between align-items-center mt-3 p-3 border-top border-secondary border-opacity-10">
+                      <Button 
+                        variant="outline-info" 
+                        size="sm"
+                        disabled={resellerData.first} 
+                        onClick={() => setResellerPage(p => Math.max(0, p - 1))}
+                        className="px-4 fw-bold"
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-white-50 small fw-bold">
+                        Page {resellerPage + 1} of {resellerData.totalPages}
+                      </span>
+                      <Button 
+                        variant="outline-info" 
+                        size="sm"
+                        disabled={resellerData.last} 
+                        onClick={() => setResellerPage(p => p + 1)}
+                        className="px-4 fw-bold"
+                      >
+                        Next
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}

@@ -51,7 +51,15 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
         onClick={onMobileClose}
       />
       <div className={`glass-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
-        <div className="logo-box">WP</div>
+        <div className="logo-box">
+          <span className="logo-text">WP</span>
+          <div className="logo-visualizer">
+            <span className="v-bar"></span>
+            <span className="v-bar"></span>
+            <span className="v-bar"></span>
+            <span className="v-bar"></span>
+          </div>
+        </div>
         <nav className="nav-links">
           {navItems.map((item) => (
             <div 

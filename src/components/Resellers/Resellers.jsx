@@ -44,10 +44,11 @@ const Resellers = () => {
   const filteredResellers = useMemo(() => {
     if (!resellersData?.content) return [];
     return resellersData.content.filter(reseller => {
+      const isReseller = reseller.role === 'RESELLER';
       const matchUsername = !usernameFilter || reseller.username?.toLowerCase().includes(usernameFilter.toLowerCase());
       const matchName = !nameFilter || reseller.fullName?.toLowerCase().includes(nameFilter.toLowerCase());
       const matchEmail = !emailFilter || reseller.email?.toLowerCase().includes(emailFilter.toLowerCase());
-      return matchUsername && matchName && matchEmail;
+      return isReseller && matchUsername && matchName && matchEmail;
     });
   }, [resellersData, usernameFilter, nameFilter, emailFilter]);
 
@@ -274,11 +275,29 @@ const Resellers = () => {
                   </div>
                 )}
                 
-                <Pagination 
-                  currentPage={page} 
-                  totalPages={resellersData?.totalPages || 0} 
-                  onPageChange={setPage} 
-                />
+                {resellersData && resellersData.totalPages > 1 && (
+                  <div className="d-flex justify-content-between align-items-center p-4" style={{ paddingLeft: '25px', paddingRight: '25px' }}>
+                    <Button 
+                      variant="outline-info" 
+                      className="px-4 fw-bold"
+                      disabled={page === 0 || isLoading} 
+                      onClick={() => setPage(p => Math.max(0, p - 1))}
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-white-50 small">
+                      Page <span className="text-white fw-bold">{page + 1}</span> of {resellersData.totalPages}
+                    </span>
+                    <Button 
+                      variant="outline-info" 
+                      className="px-4 fw-bold"
+                      disabled={page >= resellersData.totalPages - 1 || isLoading} 
+                      onClick={() => setPage(p => p + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </div>
             </motion.div>
           ) : (

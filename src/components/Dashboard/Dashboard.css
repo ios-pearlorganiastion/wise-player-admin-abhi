@@ -1,46 +1,58 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 .dashboard-container {
-  background-color: var(--bg-primary);
-  min-height: 100vh;
   display: flex;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  color: var(--text-main);
+  min-height: 100vh;
   position: relative;
 }
 
-/* Sidebar Glass Effect */
-.glass-sidebar {
-  width: 260px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  border-right: 1px solid var(--glass-border);
-  display: flex;
-  flex-direction: column;
-  padding: 40px 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 100;
-}
+/* Sidebar Glass Effect moved to responsive section */
 
 .logo-box {
   color: var(--accent-cyan);
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 800;
   font-size: 2.5rem;
-  margin-bottom: 50px;
+  margin-bottom: 25px; /* Reduced to fit all items */
   padding: 0 30px;
   text-shadow: var(--glow-cyan);
   letter-spacing: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-visualizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 25px;
+  padding-bottom: 5px;
+}
+
+.v-bar {
+  width: 4px;
+  height: 40%;
+  background: var(--accent-cyan);
+  border-radius: 10px;
+  box-shadow: var(--glow-cyan);
+  animation: visualizer-wave 1.2s ease-in-out infinite;
+}
+
+.v-bar:nth-child(2) { animation-delay: 0.2s; height: 60%; }
+.v-bar:nth-child(3) { animation-delay: 0.4s; height: 80%; }
+.v-bar:nth-child(4) { animation-delay: 0.6s; height: 50%; }
+
+@keyframes visualizer-wave {
+  0%, 100% { height: 30%; opacity: 0.5; }
+  50% { height: 100%; opacity: 1; }
 }
 
 .nav-links {
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: 8px;
+  gap: 4px; /* Reduced to fit all items */
 }
 
 .nav-item {
@@ -409,7 +421,6 @@
   display: flex;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
 }
 
 /* Base Sidebar (Desktop/lg+) */
@@ -421,12 +432,23 @@
   display: flex;
   flex-direction: column;
   padding: 30px 0;
-  position: sticky;
+  position: fixed;
   top: 0;
-  height: 100vh;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  left: 0;
+  bottom: 0; /* Anchor to bottom */
+  height: 100vh !important; /* Force full height */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1040;
   flex-shrink: 0;
+  
+  /* Hide scrollbar while allowing scroll for accessibility */
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.glass-sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 /* Tablet Sidebar (md to lg) - Mini Sidebar */
@@ -477,16 +499,23 @@
   flex-grow: 1;
   padding: 20px;
   width: 100%;
-  min-width: 0; /* Prevents flexbox overflow */
+  min-width: 0; 
   transition: all 0.3s ease;
+  margin-left: 0; /* Default for mobile */
 }
 
 @media (min-width: 768px) {
-  .content-area { padding: 30px; }
+  .content-area { 
+    padding: 30px; 
+    margin-left: 80px; /* Account for mini sidebar */
+  }
 }
 
 @media (min-width: 1024px) {
-  .content-area { padding: 40px; }
+  .content-area { 
+    padding: 40px; 
+    margin-left: 260px; /* Account for full sidebar */
+  }
 }
 
 /* Header Responsiveness */
@@ -500,8 +529,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  position: sticky;
-  top: 15px;
+  position: relative;
   z-index: 1000;
 }
 
@@ -605,9 +633,9 @@
 .user-table-grid { grid-template-columns: minmax(180px, 2fr) minmax(150px, 1.5fr) 120px 140px 100px 100px; gap: 15px; }
 
 /* 
-  Subscriptions Table Grid (8 cols): ID, DEVICE ID, PLAN, START, END, AMOUNT, STATUS, ACTIONS
+  Subscriptions Table Grid (6 cols): ID, DEVICE ID, PLAN, START, END, STATUS
 */
-.subs-table-grid { grid-template-columns: 80px minmax(180px, 2fr) 100px 120px 120px 100px 100px; gap: 15px; }
+.subs-table-grid { grid-template-columns: 80px minmax(180px, 2fr) 100px 120px 120px 100px; gap: 15px; }
 
 /* 
   Recharge Requests Table Grid (7 cols): ID, DEVICE ID, PLAN, AMOUNT, STATUS, DATE, ACTIONS

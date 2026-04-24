@@ -48,11 +48,13 @@ export const useSubscriptionReport = (from: string, to: string) => {
   });
 };
 
-export const useResellerReport = () => {
-  return useQuery<ResellerReport[], Error>({
-    queryKey: ["report-resellers"],
+export const useResellerReport = (page: number = 0, size: number = 10) => {
+  return useQuery<PaginatedResponse<ResellerReport>, Error>({
+    queryKey: ["report-resellers", page, size],
     queryFn: async () => {
-      const { data } = await apiClient.get<ResellerReport[]>(REPORT_ENDPOINTS.RESELLERS);
+      const { data } = await apiClient.get<PaginatedResponse<ResellerReport>>(
+        `${REPORT_ENDPOINTS.RESELLERS}?page=${page}&size=${size}`
+      );
       return data;
     },
   });
