@@ -436,7 +436,7 @@
   top: 0;
   left: 0;
   bottom: 0; /* Anchor to bottom */
-  height: 100vh !important; /* Force full height */
+  height: 120vh !important; /* Over-extend to account for 0.9 zoom gap */
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1040;
   flex-shrink: 0;
