@@ -37,6 +37,7 @@ const Plans = () => {
     name: '',
     durationDays: '',
     price: '',
+    credits: '',
     currency: 'EUR',
     description: ''
   });
@@ -50,6 +51,7 @@ const Plans = () => {
         name: plan.name,
         durationDays: plan.durationDays,
         price: plan.price,
+        credits: plan.credits || '',
         currency: plan.currency || 'EUR',
         description: plan.description || ''
       });
@@ -59,6 +61,7 @@ const Plans = () => {
         name: '',
         durationDays: '',
         price: '',
+        credits: '',
         currency: 'EUR',
         description: ''
       });
@@ -71,7 +74,8 @@ const Plans = () => {
     const payload = {
       ...formData,
       durationDays: parseInt(formData.durationDays),
-      price: parseFloat(formData.price)
+      price: parseFloat(formData.price),
+      credits: parseFloat(formData.credits)
     };
 
     if (editingPlan) {
@@ -187,6 +191,7 @@ const Plans = () => {
                 </div>
                 <div className="th-cell align-right">DURATION</div>
                 <div className="th-cell align-right">PRICE</div>
+                <div className="th-cell align-right">CREDITS</div>
                 <div className="th-cell align-center">STATUS</div>
                 <div className="th-cell align-center">ACTIONS</div>
               </div>
@@ -207,6 +212,9 @@ const Plans = () => {
                   <div className="td-cell align-right text-white-50">{plan.durationDays} Days</div>
                   <div className="td-cell align-right">
                     <span className="text-info fw-bold">{plan.price}</span> {plan.currency}
+                  </div>
+                  <div className="td-cell align-right">
+                    <span className="text-warning fw-bold">{plan.credits}</span>
                   </div>
                   <div className="td-cell align-center">
                     <Badge bg={plan.active ? "success" : "secondary"} className="status-pill">
@@ -303,6 +311,19 @@ const Plans = () => {
                 </Form.Group>
               </Col>
             </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="text-white-50 small">Credit Cost (for Resellers)</Form.Label>
+              <Form.Control 
+                type="number" 
+                step="0.01"
+                required 
+                value={formData.credits}
+                onChange={e => setFormData({...formData, credits: e.target.value})}
+                placeholder="e.g. 30.00"
+                className="bg-secondary text-white border-0"
+              />
+            </Form.Group>
 
             <Form.Group className="mb-4">
               <Form.Label className="text-white-50 small">Description</Form.Label>

@@ -150,9 +150,10 @@ export interface Plan {
   name: string;
   durationDays: number;
   price: number;
+  credits: number;
   currency: string;
   description: string;
-  status: "ACTIVE" | "INACTIVE";
+  active: boolean;
 }
 
 // Activation Request Types

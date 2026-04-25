@@ -645,7 +645,7 @@
 /* 
   Plans Table Grid (6 cols): ID, NAME, DURATION, PRICE, STATUS, ACTIONS
 */
-.plan-table-grid { grid-template-columns: 80px minmax(200px, 3fr) 120px 120px 100px 100px; gap: 20px; }
+.plan-table-grid { grid-template-columns: 80px minmax(200px, 2.5fr) 100px 100px 100px 100px 100px; gap: 15px; }
 
 /* 
   Devices Table Grid (8 cols): DEVICE ID, STATUS, SUBS, MODEL, OS VERSION, PLATFORM, REGISTERED DATE, ACTION

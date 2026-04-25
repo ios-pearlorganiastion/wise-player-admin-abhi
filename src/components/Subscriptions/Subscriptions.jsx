@@ -294,7 +294,10 @@ const Subscriptions = () => {
                             }}
                           >
                             <div className="fw-bold">{plan.name}</div>
-                            <div className="small" style={{ opacity: 0.6 }}>{plan.durationDays} days · €{plan.price}</div>
+                            <div className="small" style={{ opacity: 0.6 }}>
+                              {plan.durationDays} days · {plan.price} {plan.currency} · 
+                              <span className="text-warning fw-bold ms-1">{plan.credits} Credits</span>
+                            </div>
                           </div>
                         ))}
                       </motion.div>
