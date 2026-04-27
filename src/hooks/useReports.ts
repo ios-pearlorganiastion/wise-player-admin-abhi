@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../api/axios";
 import { REPORT_ENDPOINTS } from "../api/endpoints";
-import { RevenueReport, DeviceReport, SubscriptionReport, ResellerReport } from "../types/api.types";
+import { RevenueReport, DeviceReport, SubscriptionReport, ResellerReport, PaginatedResponse } from "../types/api.types";
 
 export const useRevenueReport = (from: string, to: string) => {
   return useQuery<RevenueReport, Error>({
