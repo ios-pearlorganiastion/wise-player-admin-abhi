@@ -31,7 +31,8 @@ const Resellers = () => {
     username: '',
     fullName: '',
     email: '',
-    password: ''
+    password: '',
+    credits: ''
   });
 
   const [confirmState, setConfirmState] = useState({ show: false, reseller: null });
@@ -60,7 +61,8 @@ const Resellers = () => {
         username: reseller.username,
         fullName: reseller.fullName,
         email: reseller.email || '',
-        password: '' 
+        password: '',
+        credits: reseller.credits !== undefined ? reseller.credits : 0
       });
     } else {
       setEditingReseller(null);
@@ -68,7 +70,8 @@ const Resellers = () => {
         username: '',
         fullName: '',
         email: '',
-        password: ''
+        password: '',
+        credits: ''
       });
     }
     setShowModal(true);
@@ -82,6 +85,7 @@ const Resellers = () => {
         email: formData.email
       };
       if (formData.password) updatePayload.password = formData.password;
+      if (formData.credits !== '') updatePayload.credits = Number(formData.credits);
       
       updateMutation.mutate({ id: editingReseller.id, reseller: updatePayload }, {
         onSuccess: () => setShowModal(false)
@@ -198,7 +202,7 @@ const Resellers = () => {
                   <Alert variant="danger" className="m-3">Error loading resellers: {error.message}</Alert>
                 ) : (
                   <div className="custom-table-wrapper" style={{ overflowX: 'auto', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div className="table-header-row" style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px', background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="table-header-row" style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1fr 1.2fr 1fr', gap: '20px', background: 'rgba(255,255,255,0.03)' }}>
                       <div className="th-cell">
                         USERNAME
                         <ColumnFilter column="username" onFilterChange={(_, val) => setUsernameFilter(val)} placeholder="Filter" />
@@ -212,6 +216,7 @@ const Resellers = () => {
                         <ColumnFilter column="email" onFilterChange={(_, val) => setEmailFilter(val)} placeholder="Filter" />
                       </div>
                       <div className="th-cell text-center">USERS</div>
+                      <div className="th-cell text-center">CREDITS</div>
                       <div className="th-cell">CREATED</div>
                       <div className="th-cell text-center">ACTION</div>
                     </div>
@@ -223,7 +228,7 @@ const Resellers = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                         className="table-data-row align-items-center mb-1"
-                        style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1.2fr 1fr', gap: '20px', cursor: 'pointer' }}
+                        style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1fr 1.2fr 1fr', gap: '20px', cursor: 'pointer' }}
                         onClick={() => setSelectedReseller(reseller)}
                       >
                         <div className="td-cell fw-bold text-white px-2">
@@ -242,6 +247,11 @@ const Resellers = () => {
                         <div className="td-cell text-center">
                           <Badge bg="dark" className="border border-secondary text-info px-3">
                             {reseller.totalUsers || 0}
+                          </Badge>
+                        </div>
+                        <div className="td-cell text-center">
+                          <Badge bg="dark" className="border border-secondary text-warning px-3">
+                            {reseller.credits !== undefined ? reseller.credits : 0}
                           </Badge>
                         </div>
                         <div className="td-cell text-white-50 small">
@@ -363,6 +373,20 @@ const Resellers = () => {
                 className="bg-secondary text-white border-0"
               />
             </Form.Group>
+
+            {editingReseller && (
+              <Form.Group className="mb-4">
+                <Form.Label className="text-white-50 small">Credits / Balance</Form.Label>
+                <Form.Control 
+                  type="number"
+                  step="0.01"
+                  value={formData.credits}
+                  onChange={e => setFormData({...formData, credits: e.target.value})}
+                  placeholder="Enter current balance"
+                  className="bg-secondary text-white border-0"
+                />
+              </Form.Group>
+            )}
 
             <Button 
               variant="danger" 
