@@ -21,10 +21,7 @@ const SupportTickets = () => {
 
   const { data: ticketsData, isLoading, error } = useSupportTickets(page, 20, statusFilter || undefined);
 
-  const handleNavClick = (id) => {
-    // Navigation is handled via Sidebar/Router, but we might need to close mobile menu
-    setIsMobileOpen(false);
-  };
+
 
   const statusOptions = [
     { label: 'All Status', value: '' },

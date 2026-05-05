@@ -38,6 +38,7 @@ const Subscriptions = () => {
 
   // Reset to page 0 whenever filters change (required for server-side filtering)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(0);
   }, [filters]);
 
@@ -76,9 +77,7 @@ const Subscriptions = () => {
     });
   };
 
-  const handleDelete = (id) => {
-    setConfirmState({ show: true, subId: id });
-  };
+
 
   const executeDelete = () => {
     if (confirmState.subId) {

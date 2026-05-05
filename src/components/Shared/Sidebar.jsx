@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiUsers, FiDollarSign, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy } from 'react-icons/fi';
+import { FiPlay, FiUsers, FiDollarSign, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock } from 'react-icons/fi';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSupportTicketsCount } from '../../hooks/useSupportTickets';
@@ -93,6 +93,18 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
               <span className="nav-label">{item.label}</span>
             </div>
           ))}
+
+          <div className="sidebar-divider"></div>
+
+          {/* Change Password - visible to all authenticated users */}
+          <div 
+            className={`nav-item ${activePage === 'change-password' ? 'active' : ''}`}
+            onClick={() => handleNavClick('/change-password')}
+            title="Change Password"
+          >
+            <span className="nav-icon"><FiLock /></span>
+            <span className="nav-label">Change Password</span>
+          </div>
         </nav>
       </div>
     </>

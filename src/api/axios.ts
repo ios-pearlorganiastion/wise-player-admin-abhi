@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && error.response?.data?.message !== "Current password is incorrect") {
       // Dispatch a custom event so React components can listen and react
       // The AuthContext will catch this and naturally log out the user.
       window.dispatchEvent(new Event("unauthorized"));

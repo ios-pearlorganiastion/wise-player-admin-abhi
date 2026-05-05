@@ -14,9 +14,7 @@ const Reports = () => {
   
   // Date range defaults - last 30 days
   const today = new Date().toISOString().split('T')[0];
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  
-  const [fromDate, setFromDate] = useState(thirtyDaysAgo);
+  const [fromDate, setFromDate] = useState(() => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
   const [toDate, setToDate] = useState(today);
 
   const [resellerPage, setResellerPage] = useState(0);
