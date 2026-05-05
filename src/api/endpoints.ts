@@ -4,6 +4,7 @@ export const AUTH_ENDPOINTS = {
   INVITE: "/api/admin/management/invite",
   VERIFY_INVITE: "/api/admin/management/invite/verify",
   COMPLETE_SETUP: "/api/admin/management/setup/complete",
+  CHANGE_PASSWORD: "/api/admin/auth/change-password",
 };
 
 // Dashboard Endpoints
