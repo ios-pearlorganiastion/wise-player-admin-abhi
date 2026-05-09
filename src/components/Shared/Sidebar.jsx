@@ -31,6 +31,7 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
     { id: 'reports', icon: <FiBarChart2 />, path: '/reports', label: 'Reports' },
     { id: 'users', icon: <FiUserCheck />, path: '/users', label: 'Users' },
     { id: 'support-tickets', icon: <FiLifeBuoy />, path: '/support-tickets', label: 'Support', showBadge: true, badgeKey: 'openSupportTickets' },
+    { id: 'change-password', icon: <FiLock />, path: '/change-password', label: 'Change Password' },
   ];
 
   const superAdminItems = [
@@ -74,7 +75,7 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
                 (item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats?.[item.badgeKey]) > 0
               ) && (
                 <span className="nav-badge animate-pulse">
-                  {item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats[item.badgeKey]}
+                  {item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats?.[item.badgeKey]}
                 </span>
               )}
             </div>
@@ -93,18 +94,6 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
               <span className="nav-label">{item.label}</span>
             </div>
           ))}
-
-          <div className="sidebar-divider"></div>
-
-          {/* Change Password - visible to all authenticated users */}
-          <div 
-            className={`nav-item ${activePage === 'change-password' ? 'active' : ''}`}
-            onClick={() => handleNavClick('/change-password')}
-            title="Change Password"
-          >
-            <span className="nav-icon"><FiLock /></span>
-            <span className="nav-label">Change Password</span>
-          </div>
         </nav>
       </div>
     </>
