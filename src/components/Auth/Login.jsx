@@ -95,12 +95,19 @@ const Login = () => {
                     placeholder="Enter password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required 
                   />
                 </InputGroup>
               </Form.Group>
 
-
+              <div className="d-flex justify-content-end mb-4">
+                <Button 
+                  variant="link" 
+                  className="p-0 text-decoration-none text-light-50 small"
+                  onClick={() => navigate('/forgot-password')}
+                >
+                  Forgot Password?
+                </Button>
+              </div>
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button type="submit" className="w-100 login-btn" disabled={loginMutation.isPending}>

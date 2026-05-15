@@ -16,6 +16,8 @@ import Reports from './components/Reports/Reports';
 import Users from './components/Users/Users';
 import SupportTickets from './components/SupportTickets/SupportTickets';
 import ChangePassword from './components/Auth/ChangePassword';
+import ForgotPassword from './components/Auth/ForgotPassword';
+import ResetPassword from './components/Auth/ResetPassword';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -25,6 +27,9 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin/setup" element={<AdminSetup />} />
             
             {/* Protected Routes */}

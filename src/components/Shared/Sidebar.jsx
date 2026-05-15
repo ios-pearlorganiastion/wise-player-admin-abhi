@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiUsers, FiDollarSign, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock } from 'react-icons/fi';
+import { FiPlay, FiUsers, FiDollarSign, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock, FiLogOut } from 'react-icons/fi';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSupportTicketsCount } from '../../hooks/useSupportTickets';
@@ -8,7 +8,7 @@ import './ColumnFilter.css'; // Reusing some shared styles or we can create Side
 
 const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user, logout } = useAuthContext();
   const { data: stats } = useDashboardStats();
   const { data: openTicketsCount } = useSupportTicketsCount('OPEN');
 
@@ -94,6 +94,16 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
               <span className="nav-label">{item.label}</span>
             </div>
           ))}
+          <div className="sidebar-divider"></div>
+          
+          <div 
+            className="nav-item logout-nav-item"
+            onClick={logout}
+            title="Logout"
+          >
+            <span className="nav-icon"><FiLogOut /></span>
+            <span className="nav-label">Logout</span>
+          </div>
         </nav>
       </div>
     </>
