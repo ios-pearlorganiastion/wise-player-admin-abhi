@@ -228,9 +228,7 @@ const Reports = () => {
                     <div className="th-cell align-right">ACTIVE USERS</div>
                     <div className="th-cell align-center">PENDING REQ</div>
                   </div>
-                  {(resellerData?.content || [])
-                    .filter(res => res.role === 'RESELLER')
-                    .map((res, i) => (
+                {(resellerData?.content || []).map((res, i) => (
                     <motion.div 
                       key={res.id || i} 
                       initial={{ opacity: 0, y: 10 }}

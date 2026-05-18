@@ -14,13 +14,9 @@ import Reports from './components/Reports/Reports';
 import Users from './components/Users/Users';
 import SupportTickets from './components/SupportTickets/SupportTickets';
 import ChangePassword from './components/Auth/ChangePassword';
-<<<<<<< HEAD
 import ForgotPassword from './components/Auth/ForgotPassword';
 import ResetPassword from './components/Auth/ResetPassword';
 import 'bootstrap/dist/css/bootstrap.min.css';
-=======
-
->>>>>>> 532cd4eab1f1be9d4b4dff579e416ceb61bb40ba
 
 function App() {
   return (
