@@ -3,12 +3,30 @@ import { apiClient } from "../api/axios";
 import { DEVICES_ENDPOINTS } from "../api/endpoints";
 import { PaginatedResponse, Device, UpdateDeviceStatusRequest } from "../types/api.types";
 
-export const useDevices = (page: number, size: number) => {
+export interface DeviceFilters {
+  deviceId?: string;
+  status?: string;
+  subscription?: string;
+  model?: string;
+  platform?: string;
+}
+
+export const useDevices = (page: number, size: number, filters?: DeviceFilters) => {
   return useQuery<PaginatedResponse<Device>, Error>({
-    queryKey: ["devices", page, size],
+    queryKey: ["devices", page, size, filters],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("size", size.toString());
+      if (filters) {
+        if (filters.deviceId) params.append("deviceId", filters.deviceId);
+        if (filters.status) params.append("status", filters.status);
+        if (filters.subscription) params.append("subscription", filters.subscription);
+        if (filters.model) params.append("model", filters.model);
+        if (filters.platform) params.append("platform", filters.platform);
+      }
       const { data } = await apiClient.get<PaginatedResponse<Device>>(
-        `${DEVICES_ENDPOINTS.LIST}?page=${page}&size=${size}`
+        `${DEVICES_ENDPOINTS.LIST}?${params.toString()}`
       );
       return data;
     },
@@ -39,6 +57,19 @@ export const useUpdateDeviceStatus = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["devices"] });
       queryClient.invalidateQueries({ queryKey: ["device", variables.deviceId] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+    },
+  });
+};
+
+export const useDeleteDevice = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: async (deviceId) => {
+      await apiClient.delete(DEVICES_ENDPOINTS.DELETE(deviceId));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
       queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
     },
   });

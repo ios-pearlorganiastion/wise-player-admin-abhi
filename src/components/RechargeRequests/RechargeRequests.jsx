@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCheckSquare, FiCheck, FiX, FiActivity, FiLogOut, FiMessageSquare, FiMenu } from 'react-icons/fi';
@@ -21,16 +21,20 @@ const ActivationRequests = () => {
   const [deviceFilter, setDeviceFilter] = useState('');
   const [planFilter, setPlanFilter] = useState('');
 
-  const { data: requestsData, isLoading, error } = useActivationRequests(statusFilter, page, size);
+  const activeFilters = {
+    ...(deviceFilter ? { deviceId: deviceFilter } : {}),
+    ...(planFilter ? { planName: planFilter } : {}),
+  };
 
-  const filteredRequests = useMemo(() => {
-    if (!requestsData?.content) return [];
-    return requestsData.content.filter(req => {
-      const matchDevice = !deviceFilter || req.deviceId?.toLowerCase().includes(deviceFilter.toLowerCase());
-      const matchPlan = !planFilter || req.planName?.toLowerCase().includes(planFilter.toLowerCase());
-      return matchDevice && matchPlan;
-    });
-  }, [requestsData, deviceFilter, planFilter]);
+  const { data: requestsData, isLoading, error } = useActivationRequests(statusFilter, page, size, activeFilters);
+
+  const requests = requestsData?.content || [];
+
+  // Reset page when filters change
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(0);
+  }, [deviceFilter, planFilter, statusFilter]);
   const approveMutation = useApproveActivation();
   const rejectMutation = useRejectActivation();
 
@@ -143,9 +147,10 @@ const ActivationRequests = () => {
             <div className="table-header-row req-table-grid">
               <div className="th-cell align-left">ID</div>
               <div className="th-cell align-left">
-                DEVICE ID
-                <ColumnFilter column="device" onFilterChange={(_, val) => setDeviceFilter(val)} placeholder="Device ID" />
+                MAC ADDRESS
+                <ColumnFilter column="device" onFilterChange={(_, val) => setDeviceFilter(val)} placeholder="MAC/ID" />
               </div>
+
               <div className="th-cell align-left">
                 PLAN
                 <ColumnFilter column="plan" onFilterChange={(_, val) => setPlanFilter(val)} placeholder="Plan" />
@@ -163,10 +168,10 @@ const ActivationRequests = () => {
               <Alert variant="danger" className="m-3">Error loading requests: {error.message}</Alert>
             ) : requestsData?.content?.length === 0 ? (
               <div className="p-4 text-center text-white">No {statusFilter.toLowerCase()} requests found.</div>
-            ) : filteredRequests.length === 0 ? (
+            ) : requests.length === 0 ? (
               <div className="p-4 text-center text-white">No requests match your filters.</div>
             ) : (
-              filteredRequests.map((req, index) => (
+              requests.map((req, index) => (
                 <motion.div 
                   key={req.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -175,7 +180,12 @@ const ActivationRequests = () => {
                   className="table-data-row align-items-center req-table-grid"
                 >
                   <div className="td-cell align-left text-white-50">#{req.id}</div>
-                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={req.deviceId}>{req.deviceId}</div>
+                  <div className="td-cell align-left px-2 wrap-text">
+                    <div className="fw-bold text-white" title={req.macAddress}>
+                      {req.macAddress || <span className="text-secondary fst-italic">N/A</span>}
+                    </div>
+                  </div>
+
                   <div className="td-cell align-left">{req.planName}</div>
                   <div className="td-cell align-right fw-bold text-success">{req.amount} {req.currency}</div>
                   <div className="td-cell align-center">
@@ -231,7 +241,9 @@ const ActivationRequests = () => {
           {actionError && <Alert variant="danger" className="mb-3 border border-danger">{actionError}</Alert>}
           <Form onSubmit={handleAction}>
             <div className="mb-3 p-3 bg-secondary rounded" style={{ fontSize: '0.9rem' }}>
+              <div><strong>MAC Address:</strong> {selectedRequest?.macAddress || 'N/A'}</div>
               <div><strong>Device ID:</strong> {selectedRequest?.deviceId}</div>
+
               <div><strong>Plan:</strong> {selectedRequest?.planName}</div>
               <div><strong>Amount:</strong> {selectedRequest?.amount} {selectedRequest?.currency}</div>
               <div><strong>Status:</strong> <Badge className={`status-pill ${selectedRequest?.status.toLowerCase()}`}>{selectedRequest?.status}</Badge></div>

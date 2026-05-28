@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUserPlus, FiActivity, FiShield, FiLogOut, FiEdit2, FiMail, FiUser, FiCalendar, FiMenu, FiChevronRight } from 'react-icons/fi';
@@ -19,7 +19,20 @@ const Resellers = () => {
   const [selectedReseller, setSelectedReseller] = useState(null);
   const size = 20;
   
-  const { data: resellersData, isLoading, error } = useResellers(page, size);
+  // Filter state
+  const [filters, setFilters] = useState({
+    username: '',
+    name: '',
+    email: ''
+  });
+
+  const activeFilters = {
+    ...(filters.username ? { username: filters.username } : {}),
+    ...(filters.name ? { name: filters.name } : {}),
+    ...(filters.email ? { email: filters.email } : {}),
+  };
+
+  const { data: resellersData, isLoading, error } = useResellers(page, size, activeFilters);
   const createMutation = useCreateReseller();
   const updateMutation = useUpdateReseller();
   const toggleStatusMutation = useToggleResellerStatus();
@@ -37,21 +50,12 @@ const Resellers = () => {
 
   const [confirmState, setConfirmState] = useState({ show: false, reseller: null });
 
-  // Filter state
-  const [usernameFilter, setUsernameFilter] = useState('');
-  const [nameFilter, setNameFilter] = useState('');
-  const [emailFilter, setEmailFilter] = useState('');
+  const handleFilterChange = useCallback((column, value) => {
+    setFilters(prev => ({ ...prev, [column]: value }));
+    setPage(0);
+  }, []);
 
-  const filteredResellers = useMemo(() => {
-    if (!resellersData?.content) return [];
-    return resellersData.content.filter(reseller => {
-      const isReseller = reseller.role === 'RESELLER';
-      const matchUsername = !usernameFilter || reseller.username?.toLowerCase().includes(usernameFilter.toLowerCase());
-      const matchName = !nameFilter || reseller.fullName?.toLowerCase().includes(nameFilter.toLowerCase());
-      const matchEmail = !emailFilter || reseller.email?.toLowerCase().includes(emailFilter.toLowerCase());
-      return isReseller && matchUsername && matchName && matchEmail;
-    });
-  }, [resellersData, usernameFilter, nameFilter, emailFilter]);
+  const resellers = resellersData?.content || [];
 
   const handleOpenModal = (e, reseller = null) => {
     if (e) e.stopPropagation(); // Prevent row click from triggering
@@ -205,15 +209,15 @@ const Resellers = () => {
                     <div className="table-header-row" style={{ minWidth: '1000px', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1fr 1.2fr 1fr', gap: '20px', background: 'rgba(255,255,255,0.03)' }}>
                       <div className="th-cell">
                         USERNAME
-                        <ColumnFilter column="username" onFilterChange={(_, val) => setUsernameFilter(val)} placeholder="Filter" />
+                        <ColumnFilter column="username" onFilterChange={handleFilterChange} placeholder="Filter" />
                       </div>
                       <div className="th-cell">
                         FULL NAME
-                        <ColumnFilter column="name" onFilterChange={(_, val) => setNameFilter(val)} placeholder="Filter" />
+                        <ColumnFilter column="name" onFilterChange={handleFilterChange} placeholder="Filter" />
                       </div>
                       <div className="th-cell">
                         EMAIL
-                        <ColumnFilter column="email" onFilterChange={(_, val) => setEmailFilter(val)} placeholder="Filter" />
+                        <ColumnFilter column="email" onFilterChange={handleFilterChange} placeholder="Filter" />
                       </div>
                       <div className="th-cell text-center">USERS</div>
                       <div className="th-cell text-center">CREDITS</div>
@@ -221,7 +225,7 @@ const Resellers = () => {
                       <div className="th-cell text-center">ACTION</div>
                     </div>
 
-                    {filteredResellers.map((reseller, index) => (
+                    {resellers.map((reseller, index) => (
                       <motion.div 
                         key={reseller.id}
                         initial={{ opacity: 0, y: 10 }}
@@ -279,7 +283,7 @@ const Resellers = () => {
                       </motion.div>
                     ))}
                     
-                    {filteredResellers.length === 0 && (
+                    {resellers.length === 0 && (
                       <div className="p-5 text-center text-white-50">No matching resellers found.</div>
                     )}
                   </div>

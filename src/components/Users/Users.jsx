@@ -25,8 +25,11 @@ const Users = () => {
   const filteredDevices = useMemo(() => {
     if (!devicesData?.content) return [];
     return devicesData.content.filter(dev => 
-      !accountFilter || dev.deviceId?.toLowerCase().includes(accountFilter.toLowerCase())
+      !accountFilter || 
+      dev.deviceId?.toLowerCase().includes(accountFilter.toLowerCase()) ||
+      (dev.macAddress && dev.macAddress.toLowerCase().includes(accountFilter.toLowerCase()))
     );
+
   }, [devicesData, accountFilter]);
   const updateStatusMutation = useUpdateDeviceStatus();
 
@@ -113,9 +116,10 @@ const Users = () => {
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
             <div className="table-header-row user-table-grid">
               <div className="th-cell align-left">
-                ACCOUNT ID
-                <ColumnFilter column="account" onFilterChange={(_, val) => setAccountFilter(val)} placeholder="Account ID" />
+                MAC ADDRESS
+                <ColumnFilter column="account" onFilterChange={(_, val) => setAccountFilter(val)} placeholder="MAC/ID" />
               </div>
+
               <div className="th-cell align-left">REGISTERED ON</div>
               <div className="th-cell align-center">STATUS</div>
               <div className="th-cell align-center">ACTION</div>
@@ -138,7 +142,12 @@ const Users = () => {
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center user-table-grid"
                 >
-                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={dev.deviceId}>{dev.deviceId}</div>
+                  <div className="td-cell align-left px-2 wrap-text">
+                    <div className="fw-bold text-white" title={dev.macAddress}>
+                      {dev.macAddress || <span className="text-secondary fst-italic">N/A</span>}
+                    </div>
+                  </div>
+
                   <div className="td-cell align-left text-white">{new Date(dev.registeredAt).toLocaleDateString()}</div>
                   <div className="td-cell align-center">
                     <Badge className={`status-pill ${dev.deviceStatus.toLowerCase()}`}>

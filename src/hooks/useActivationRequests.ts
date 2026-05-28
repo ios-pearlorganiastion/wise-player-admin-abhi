@@ -3,12 +3,26 @@ import { apiClient } from "../api/axios";
 import { ACTIVATION_ENDPOINTS } from "../api/endpoints";
 import { ActivationRequest, PaginatedResponse } from "../types/api.types";
 
-export const useActivationRequests = (status: string, page: number, size: number) => {
+export interface ActivationFilters {
+  status?: string;
+  deviceId?: string;
+  planName?: string;
+}
+
+export const useActivationRequests = (page: number, size: number, filters?: ActivationFilters) => {
   return useQuery<PaginatedResponse<ActivationRequest>, Error>({
-    queryKey: ["activation-requests", status, page, size],
+    queryKey: ["activation-requests", page, size, filters],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("size", size.toString());
+      if (filters) {
+        if (filters.status) params.append("status", filters.status);
+        if (filters.deviceId) params.append("deviceId", filters.deviceId);
+        if (filters.planName) params.append("planName", filters.planName);
+      }
       const { data } = await apiClient.get<PaginatedResponse<ActivationRequest>>(
-        `${ACTIVATION_ENDPOINTS.LIST}?status=${status}&page=${page}&size=${size}`
+        `${ACTIVATION_ENDPOINTS.LIST}?${params.toString()}`
       );
       return data;
     },

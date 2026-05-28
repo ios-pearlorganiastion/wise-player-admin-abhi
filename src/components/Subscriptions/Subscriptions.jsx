@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button, Form, Modal } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiTrash2, FiPlus, FiLogOut, FiMenu, FiChevronDown } from 'react-icons/fi';
@@ -26,7 +26,13 @@ const Subscriptions = () => {
     status: ''
   });
   
-  const { data: subsData, isLoading, error } = useSubscriptions(page, size, filters);
+  const activeFilters = {
+    ...(filters.deviceId ? { deviceId: filters.deviceId } : {}),
+    ...(filters.plan ? { plan: filters.plan } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+  };
+  
+  const { data: subsData, isLoading, error } = useSubscriptions(page, size, activeFilters);
   const createSubMutation = useCreateManualSubscription();
   const deleteSubMutation = useDeleteSubscription();
   const { data: allPlans = [], isLoading: isPlansLoading } = useAllPlans();
@@ -46,24 +52,7 @@ const Subscriptions = () => {
     setFilters(prev => ({ ...prev, [column]: value }));
   };
 
-  const subscriptions = useMemo(() => {
-    const raw = subsData?.content || [];
-    if (!filters.deviceId && !filters.plan && !filters.status) return raw;
-    
-    return raw.filter(sub => {
-      // Case-insensitive partial match for deviceId
-      const matchDevice = !filters.deviceId || 
-        (sub.deviceId || '').toLowerCase().includes(filters.deviceId.toLowerCase());
-      // Case-insensitive exact match for plan
-      const planVal = sub.plan || sub.planName || sub.subscriptionPlan || '';
-      const matchPlan = !filters.plan || 
-        planVal.toLowerCase() === filters.plan.toLowerCase();
-      // Case-insensitive exact match for status
-      const matchStatus = !filters.status || 
-        (sub.status || '').toLowerCase() === filters.status.toLowerCase();
-      return matchDevice && matchPlan && matchStatus;
-    });
-  }, [subsData, filters]);
+  const subscriptions = subsData?.content || [];
 
   const handleCreate = (e) => {
     e.preventDefault();
@@ -167,8 +156,9 @@ const Subscriptions = () => {
             <div className="table-header-row subs-table-grid">
               <div className="th-cell align-left">ID</div>
               <div className="th-cell align-left">
-                DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
+                MAC ADDRESS <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="MAC/ID" />
               </div>
+
               <div className="th-cell">
                 PLAN 
                 <ColumnFilter 
@@ -208,9 +198,12 @@ const Subscriptions = () => {
                   className="table-data-row align-items-center subs-table-grid"
                 >
                   <div className="td-cell align-left text-white-50">#{sub.id}</div>
-                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={sub.deviceId}>
-                    {sub.deviceId}
+                  <div className="td-cell align-left px-2 wrap-text">
+                    <div className="fw-bold text-white" title={sub.macAddress}>
+                      {sub.macAddress || <span className="text-secondary fst-italic">N/A</span>}
+                    </div>
                   </div>
+
                   <div className="td-cell align-left">{sub.plan || sub.planName || sub.subscriptionPlan}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.startDate).toLocaleDateString()}</div>
                   <div className="td-cell align-left text-white">{new Date(sub.endDate).toLocaleDateString()}</div>
@@ -224,8 +217,8 @@ const Subscriptions = () => {
             )}
           </div>
           
-          {/* Pagination Controls — hidden when filters are active (all data loaded) */}
-          {!filters.deviceId && !filters.plan && !filters.status && subsData && subsData.totalPages > 1 && (
+          {/* Pagination Controls */}
+          {subsData && subsData.totalPages > 1 && (
             <div className="d-flex justify-content-between align-items-center mt-3">
               <Button 
                 variant="outline-info" 

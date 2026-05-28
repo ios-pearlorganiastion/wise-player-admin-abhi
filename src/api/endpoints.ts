@@ -19,6 +19,7 @@ export const DEVICES_ENDPOINTS = {
   LIST: "/api/admin/devices", // Append ?page=n&size=n
   GET_BY_ID: (deviceId: string) => `/api/admin/devices/${deviceId}`,
   UPDATE_STATUS: (deviceId: string) => `/api/admin/devices/${deviceId}/status`,
+  DELETE: (deviceId: string) => `/api/admin/devices/${deviceId}`,
 };
 
 // Payments Endpoints

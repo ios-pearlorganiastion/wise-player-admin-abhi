@@ -3,12 +3,26 @@ import { apiClient } from "../api/axios";
 import { RESELLER_ENDPOINTS } from "../api/endpoints";
 import { PaginatedResponse, Reseller, ResellerAnalytics, SubReseller } from "../types/api.types";
 
-export const useResellers = (page: number, size: number) => {
+export interface ResellerFilters {
+  username?: string;
+  fullName?: string;
+  email?: string;
+}
+
+export const useResellers = (page: number, size: number, filters?: ResellerFilters) => {
   return useQuery<PaginatedResponse<Reseller>, Error>({
-    queryKey: ["resellers", page, size],
+    queryKey: ["resellers", page, size, filters],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("size", size.toString());
+      if (filters) {
+        if (filters.username) params.append("username", filters.username);
+        if (filters.fullName) params.append("fullName", filters.fullName);
+        if (filters.email) params.append("email", filters.email);
+      }
       const { data } = await apiClient.get<PaginatedResponse<Reseller>>(
-        `${RESELLER_ENDPOINTS.LIST}?page=${page}&size=${size}`
+        `${RESELLER_ENDPOINTS.LIST}?${params.toString()}`
       );
       return data;
     },

@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiShield, FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiShield, FiLogOut, FiMenu, FiTrash2 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { useDevices, useUpdateDeviceStatus } from '../../hooks/useDevices';
+import { useDevices, useUpdateDeviceStatus, useDeleteDevice } from '../../hooks/useDevices';
 import { useAuthContext } from '../../contexts/AuthContext';
 import ColumnFilter from '../Shared/ColumnFilter';
 import Sidebar from '../Shared/Sidebar';
@@ -16,12 +16,7 @@ const Devices = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const size = 20; // Increase size for client-side filtering demo or implement server-side
-  
-  const { data: devicesData, isLoading, error } = useDevices(page, size);
-  const updateStatusMutation = useUpdateDeviceStatus();
-
-  const [confirmState, setConfirmState] = useState({ show: false, device: null });
+  const size = 20;
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -32,25 +27,31 @@ const Devices = () => {
     platform: ''
   });
 
-  const handleFilterChange = (column, value) => {
-    setFilters(prev => ({ ...prev, [column]: value }));
+  // Active filters sent to server (empty strings omitted)
+  const activeFilters = {
+    ...(filters.deviceId ? { deviceId: filters.deviceId } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.subscription ? { subscription: filters.subscription } : {}),
+    ...(filters.model ? { model: filters.model } : {}),
+    ...(filters.platform ? { platform: filters.platform } : {}),
   };
 
-  const filteredDevices = useMemo(() => {
-    if (!devicesData?.content) return [];
-    return devicesData.content.filter(device => {
-      return (
-        device.deviceId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
-        (filters.status === '' || device.deviceStatus === filters.status) &&
-        (filters.subscription === '' || device.subscriptionType?.toLowerCase().includes(filters.subscription.toLowerCase())) &&
-        (filters.model === '' || device.deviceModel?.toLowerCase().includes(filters.model.toLowerCase())) &&
-        (filters.platform === '' || device.platform?.toLowerCase().includes(filters.platform.toLowerCase()))
-      );
-    });
-  }, [devicesData, filters]);
+  const { data: devicesData, isLoading, error } = useDevices(page, size, activeFilters);
+  const updateStatusMutation = useUpdateDeviceStatus();
+  const deleteDeviceMutation = useDeleteDevice();
+
+  const [confirmState, setConfirmState] = useState({ show: false, device: null });
+  const [deleteConfirmState, setDeleteConfirmState] = useState({ show: false, device: null });
+
+  const handleFilterChange = useCallback((column, value) => {
+    setFilters(prev => ({ ...prev, [column]: value }));
+    setPage(0); // Reset to first page on filter change
+  }, []);
+
+  const devices = devicesData?.content || [];
 
   const handleStatusToggle = (deviceId, currentStatus) => {
-    const device = filteredDevices.find(d => (d.deviceId || d.id) === deviceId);
+    const device = devices.find(d => (d.deviceId || d.id) === deviceId);
     setConfirmState({ show: true, device: { ...device, deviceId, currentStatus } });
   };
 
@@ -62,6 +63,19 @@ const Devices = () => {
         { deviceId: device.deviceId, status: newStatus },
         { onSuccess: () => setConfirmState({ show: false, device: null }) }
       );
+    }
+  };
+
+  const handleDeleteClick = (device) => {
+    setDeleteConfirmState({ show: true, device });
+  };
+
+  const executeDeleteDevice = () => {
+    const { device } = deleteConfirmState;
+    if (device) {
+      deleteDeviceMutation.mutate(device.deviceId || device.id, {
+        onSuccess: () => setDeleteConfirmState({ show: false, device: null })
+      });
     }
   };
 
@@ -129,15 +143,16 @@ const Devices = () => {
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h3 className="section-title m-0">Device List</h3>
             <Badge bg="dark" className="text-info border border-secondary px-3 py-2">
-              Showing {filteredDevices.length} devices
+              Showing {devicesData?.totalElements ?? 0} devices
             </Badge>
           </div>
 
           <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
             <div className="table-header-row device-table-grid">
               <div className="th-cell align-left">
-                DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
+                MAC ADDRESS <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
               </div>
+
               <div className="th-cell align-center">
                 STATUS 
                 <ColumnFilter 
@@ -165,10 +180,10 @@ const Devices = () => {
               <div className="text-center my-5"><Spinner animation="border" variant="info" /></div>
             ) : error ? (
               <Alert variant="danger" className="m-3">Error loading devices: {error.message}</Alert>
-            ) : filteredDevices.length === 0 ? (
+            ) : devices.length === 0 ? (
               <div className="p-4 text-center text-white">No matching devices found.</div>
             ) : (
-              filteredDevices.map((device, index) => (
+              devices.map((device, index) => (
                 <motion.div 
                   key={device.deviceId}
                   initial={{ opacity: 0, x: -20 }}
@@ -176,7 +191,12 @@ const Devices = () => {
                   transition={{ delay: index * 0.05 }}
                   className="table-data-row align-items-center device-table-grid"
                 >
-                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={device.deviceId}>{device.deviceId}</div>
+                  <div className="td-cell align-left px-2 wrap-text">
+                    <div className="fw-bold text-white" title={device.macAddress}>
+                      {device.macAddress || <span className="text-secondary fst-italic">N/A</span>}
+                    </div>
+                  </div>
+
                   <div className="td-cell align-center">
                     <Badge className={`status-pill ${(device.deviceStatus)?.toLowerCase() || 'inactive'}`}>
                       {device.deviceStatus}
@@ -187,15 +207,24 @@ const Devices = () => {
                   <div className="td-cell align-left">{device.osVersion}</div>
                   <div className="td-cell align-left">{device.platform}</div>
                   <div className="td-cell align-left text-white">{device.registeredAt ? new Date(device.registeredAt).toLocaleDateString() : 'N/A'}</div>
-                  <div className="td-cell align-center">
+                  <div className="td-cell align-center d-flex justify-content-center gap-2">
                     <Button 
                       variant={(device.deviceStatus || device.status) === "ACTIVE" ? "outline-danger" : "outline-success"} 
                       size="sm"
                       disabled={updateStatusMutation.isPending}
                       onClick={() => handleStatusToggle(device.deviceId || device.id, device.deviceStatus || device.status)}
+                      title={(device.deviceStatus || device.status) === "ACTIVE" ? "Deactivate" : "Activate"}
                     >
-                      <FiShield className="me-1" />
-                      {(device.deviceStatus || device.status) === "ACTIVE" ? "Deactivate" : "Activate"}
+                      <FiShield />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      disabled={deleteDeviceMutation.isPending}
+                      onClick={() => handleDeleteClick(device)}
+                      title="Delete Device"
+                    >
+                      <FiTrash2 />
                     </Button>
                   </div>
                 </motion.div>
@@ -235,6 +264,17 @@ const Devices = () => {
         confirmText={confirmState.device?.currentStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}
         variant={confirmState.device?.currentStatus === 'ACTIVE' ? 'danger' : 'info'}
         isLoading={updateStatusMutation.isPending}
+      />
+
+      <ConfirmModal 
+        show={deleteConfirmState.show}
+        onHide={() => setDeleteConfirmState({ show: false, device: null })}
+        onConfirm={executeDeleteDevice}
+        title="Permanently Delete Device?"
+        message="Are you sure you want to completely delete this device? This action is permanent and will instantly remove all associated subscriptions, payments, activation requests, and playlists. This cannot be undone."
+        confirmText="Delete Completely"
+        variant="danger"
+        isLoading={deleteDeviceMutation.isPending}
       />
     </div>
   );

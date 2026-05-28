@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Row, Col, Badge, Image, Spinner, Alert, Button } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiLogOut, FiMenu } from 'react-icons/fi';
@@ -16,9 +16,6 @@ const Payments = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
-  
-  const { data: paymentsData, isLoading: isPaymentsLoading, error: paymentsError } = usePayments(page, size);
-  const { data: statsData, isLoading: isStatsLoading, error: statsError } = usePaymentStats();
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -27,22 +24,22 @@ const Payments = () => {
     status: ''
   });
 
-  const handleFilterChange = (column, value) => {
-    setFilters(prev => ({ ...prev, [column]: value }));
+  // Active filters sent to server (empty strings omitted)
+  const activeFilters = {
+    ...(filters.paymentId ? { paymentId: filters.paymentId } : {}),
+    ...(filters.deviceId ? { deviceId: filters.deviceId } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
   };
 
-  const filteredPayments = useMemo(() => {
-    if (!paymentsData?.content) return [];
-    return paymentsData.content.filter(payment => {
-      const pId = payment.paymentId || '';
-      const dId = payment.deviceId || '';
-      return (
-        pId.toLowerCase().includes(filters.paymentId.toLowerCase()) &&
-        dId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
-        (filters.status === '' || payment.status === filters.status)
-      );
-    });
-  }, [paymentsData, filters]);
+  const { data: paymentsData, isLoading: isPaymentsLoading, error: paymentsError } = usePayments(page, size, activeFilters);
+  const { data: statsData, isLoading: isStatsLoading, error: statsError } = usePaymentStats();
+
+  const payments = paymentsData?.content || [];
+
+  const handleFilterChange = useCallback((column, value) => {
+    setFilters(prev => ({ ...prev, [column]: value }));
+    setPage(0); // Reset to first page on filter change
+  }, []);
 
   const stats = [
     { title: "Total Revenue", value: `€${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
@@ -138,7 +135,7 @@ const Payments = () => {
           <div className="d-flex justify-content-between align-items-center mb-3">
              <h3 className="section-title m-0">Transactions</h3>
              <Badge bg="dark" className="text-info border border-secondary px-3 py-2">
-               Showcasing {filteredPayments.length} results
+               Showing {paymentsData?.totalElements ?? 0} results
              </Badge>
           </div>
           
@@ -148,8 +145,9 @@ const Payments = () => {
                 PAYMENT ID <ColumnFilter column="paymentId" onFilterChange={handleFilterChange} placeholder="ID" />
               </div>
               <div className="th-cell align-left">
-                DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="Device ID" />
+                MAC ADDRESS <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="MAC/ID" />
               </div>
+
               <div className="th-cell align-left">PLAN</div>
               <div className="th-cell align-right">AMOUNT</div>
               <div className="th-cell align-left">DATE</div>
@@ -177,10 +175,10 @@ const Payments = () => {
               <div className="text-center my-5"><Spinner animation="border" variant="info" /></div>
             ) : paymentsError ? (
               <Alert variant="danger" className="m-3">Error loading payments: {paymentsError.message}</Alert>
-            ) : filteredPayments.length === 0 ? (
+            ) : payments.length === 0 ? (
               <div className="p-4 text-center text-white">No matching transactions found.</div>
             ) : (
-              filteredPayments.map((payment, index) => (
+              payments.map((payment, index) => (
                 <motion.div 
                   key={payment.paymentId}
                   initial={{ opacity: 0, x: -20 }}
@@ -191,9 +189,12 @@ const Payments = () => {
                   <div className="td-cell align-left text-white-50 small wrap-text" title={payment.paymentId}>
                     {payment.paymentId}
                   </div>
-                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text" title={payment.deviceId}>
-                    {payment.deviceId}
+                  <div className="td-cell align-left px-2 wrap-text">
+                    <div className="fw-bold text-white" title={payment.macAddress}>
+                      {payment.macAddress || <span className="text-secondary fst-italic">N/A</span>}
+                    </div>
                   </div>
+
                   <div className="td-cell align-left">
                     <Badge bg="dark" className="border border-secondary text-info">
                       {payment.plan || payment.planName || payment.subscriptionPlan || 'N/A'}

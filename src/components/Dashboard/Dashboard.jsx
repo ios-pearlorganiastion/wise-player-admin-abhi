@@ -13,17 +13,17 @@ import './Dashboard.css';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthContext();
-  const displayRole = user?.role === 'SUPER_ADMIN' 
-    ? 'Super_Admin' 
-    : user?.role 
-      ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase().replace('_', ' ') 
+  const displayRole = user?.role === 'SUPER_ADMIN'
+    ? 'Super_Admin'
+    : user?.role
+      ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase().replace('_', ' ')
       : 'Admin';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats();
   // Fetch a small chunk for "recent"
   const { data: subsData, isLoading: isSubsLoading, error: subsError } = useSubscriptions(0, 10);
-  
+
   // Filter states
   const [filters, setFilters] = useState({
     deviceId: '',
@@ -39,11 +39,13 @@ const Dashboard = () => {
     if (!subsData?.content) return [];
     return subsData.content.filter(sub => {
       return (
-        sub.deviceId.toLowerCase().includes(filters.deviceId.toLowerCase()) &&
+        (sub.deviceId.toLowerCase().includes(filters.deviceId.toLowerCase()) ||
+          (sub.macAddress && sub.macAddress.toLowerCase().includes(filters.deviceId.toLowerCase()))) &&
         (filters.plan === '' || (sub.plan || sub.planName || sub.subscriptionPlan || '') === filters.plan) &&
         (filters.status === '' || sub.status === filters.status)
       );
     }).slice(0, 5); // Keep only top 5 for dashboard
+
   }, [subsData, filters]);
 
   const stats = [
@@ -56,17 +58,17 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <Sidebar 
-        activePage="dashboard" 
-        isMobileOpen={isMobileOpen} 
-        onMobileClose={() => setIsMobileOpen(false)} 
+      <Sidebar
+        activePage="dashboard"
+        isMobileOpen={isMobileOpen}
+        onMobileClose={() => setIsMobileOpen(false)}
       />
 
       <div className="content-area">
         <header className="dash-header">
           <div className="header-left-group">
-            <button 
-              className="mobile-toggle-btn" 
+            <button
+              className="mobile-toggle-btn"
               onClick={() => setIsMobileOpen(true)}
             >
               <FiMenu />
@@ -81,30 +83,30 @@ const Dashboard = () => {
           </div>
           <div className="profile-section">
             <div className="notif-bell"><FiActivity /></div>
-            
+
             <div className="profile-dropdown-container">
-              <div 
+              <div
                 className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
-                <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=00F5FF&color=000`} 
-                  roundedCircle 
-                  className="admin-avatar m-0" 
+                <Image
+                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=00F5FF&color=000`}
+                  roundedCircle
+                  className="admin-avatar m-0"
                 />
               </div>
 
               <AnimatePresence>
                 {showProfileMenu && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     className="profile-menu"
                   >
                     <div className="px-3 py-2">
-                       <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-white">{displayRole}</div>
+                      <div className="fw-bold text-white">{user?.fullName}</div>
+                      <div className="small text-white">{displayRole}</div>
                     </div>
                     <div className="profile-menu-divider"></div>
                     <div className="profile-menu-item logout" onClick={logout}>
@@ -125,53 +127,53 @@ const Dashboard = () => {
           <Alert variant="danger">Failed to load dashboard stats: {statsError.message}</Alert>
         ) : (
           <Row className="g-4 mb-5">
-          {stats.map((stat, i) => (
-            <Col key={i} lg={3} md={6}>
-              <motion.div 
-                whileHover={{ y: -10 }}
-                className={`stat-card-new ${stat.color}`}
-                style={{ boxShadow: `0 10px 30px ${stat.shadow}` }}
-              >
-                <div className="stat-info">
-                  <span className="stat-label">{stat.title}</span>
-                  <h2 className="stat-number">{stat.value}</h2>
-                </div>
-                <div className="stat-icon-box">{stat.icon}</div>
-              </motion.div>
-            </Col>
-          ))}
+            {stats.map((stat, i) => (
+              <Col key={i} lg={3} md={6}>
+                <motion.div
+                  whileHover={{ y: -10 }}
+                  className={`stat-card-new ${stat.color}`}
+                  style={{ boxShadow: `0 10px 30px ${stat.shadow}` }}
+                >
+                  <div className="stat-info">
+                    <span className="stat-label">{stat.title}</span>
+                    <h2 className="stat-number">{stat.value}</h2>
+                  </div>
+                  <div className="stat-icon-box">{stat.icon}</div>
+                </motion.div>
+              </Col>
+            ))}
           </Row>
         )}
 
         {/* Table Section */}
         <div className="recent-section">
           <div className="mb-3">
-             <h3 className="section-title m-0">Recent Subscriptions</h3>
+            <h3 className="section-title m-0">Recent Subscriptions</h3>
           </div>
-          
+
           <div className="custom-table-wrapper">
             <div className="table-header-row dashboard-table-grid">
               <div className="th-cell align-left">
-                DEVICE ID <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="ID" />
+                MAC ADDRESS <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="MAC/ID" />
               </div>
               <div className="th-cell align-left">
-                PLAN 
-                <ColumnFilter 
-                  column="plan" 
-                  onFilterChange={handleFilterChange} 
-                  placeholder="Plan" 
-                  options={[{label: 'Annual', value: 'ANNUAL'}, {label: 'Lifetime', value: 'LIFETIME'},{label: 'Trial', value: 'TRIAL'}]}
+                PLAN
+                <ColumnFilter
+                  column="plan"
+                  onFilterChange={handleFilterChange}
+                  placeholder="Plan"
+                  options={[{ label: 'Annual', value: 'ANNUAL' }, { label: 'Lifetime', value: 'LIFETIME' }, { label: 'Trial', value: 'TRIAL' }]}
                 />
               </div>
               <div className="th-cell align-left">START DATE</div>
               <div className="th-cell align-left">END DATE</div>
               <div className="th-cell align-center">
                 STATUS
-                <ColumnFilter 
-                  column="status" 
-                  onFilterChange={handleFilterChange} 
-                  placeholder="Status" 
-                  options={[{label: 'Active', value: 'ACTIVE'}, {label: 'Trial', value: 'TRIAL'}, {label: 'Expired', value: 'EXPIRED'}, {label: 'Cancelled', value: 'CANCELLED'}]}
+                <ColumnFilter
+                  column="status"
+                  onFilterChange={handleFilterChange}
+                  placeholder="Status"
+                  options={[{ label: 'Active', value: 'ACTIVE' }, { label: 'Trial', value: 'TRIAL' }, { label: 'Expired', value: 'EXPIRED' }, { label: 'Cancelled', value: 'CANCELLED' }]}
                   alignRight
                 />
               </div>
@@ -185,7 +187,7 @@ const Dashboard = () => {
               <div className="p-4 text-center text-white">No matching subscriptions found.</div>
             ) : (
               filteredSubs.map((sub, index) => (
-                <motion.div 
+                <motion.div
                   key={sub.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -195,8 +197,8 @@ const Dashboard = () => {
                   <div className="td-cell align-left wrap-text">
                     <div className="movie-info px-2">
                       <FiPlay className="text-info me-2" />
-                      <span className="fw-bold text-white" title={sub.deviceId}>
-                        {sub.deviceId}
+                      <span className="fw-bold text-white" title={sub.macAddress || sub.deviceId}>
+                        {sub.macAddress || <span className="text-secondary fst-italic">N/A</span>}
                       </span>
                     </div>
                   </div>

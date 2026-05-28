@@ -3,15 +3,27 @@ import { apiClient } from "../api/axios";
 import { SUPPORT_TICKETS_ENDPOINTS } from "../api/endpoints";
 import { PaginatedResponse, SupportTicket, TicketStatus, UpdateTicketStatusRequest } from "../types/api.types";
 
-export const useSupportTickets = (page: number, size: number, status?: TicketStatus) => {
+export interface SupportFilters {
+  status?: TicketStatus;
+  macAddress?: string;
+  email?: string;
+}
+
+export const useSupportTickets = (page: number, size: number, filters?: SupportFilters) => {
   return useQuery<PaginatedResponse<SupportTicket>, Error>({
-    queryKey: ["support-tickets", page, size, status],
+    queryKey: ["support-tickets", page, size, filters],
     queryFn: async () => {
-      let url = `${SUPPORT_TICKETS_ENDPOINTS.LIST}?page=${page}&size=${size}`;
-      if (status) {
-        url += `&status=${status}`;
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("size", size.toString());
+      if (filters) {
+        if (filters.status) params.append("status", filters.status);
+        if (filters.macAddress) params.append("macAddress", filters.macAddress);
+        if (filters.email) params.append("email", filters.email);
       }
-      const { data } = await apiClient.get<PaginatedResponse<SupportTicket>>(url);
+      const { data } = await apiClient.get<PaginatedResponse<SupportTicket>>(
+        `${SUPPORT_TICKETS_ENDPOINTS.LIST}?${params.toString()}`
+      );
       return data;
     },
   });

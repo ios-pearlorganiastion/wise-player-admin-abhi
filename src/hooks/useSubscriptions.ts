@@ -3,18 +3,24 @@ import { apiClient } from "../api/axios";
 import { SUBSCRIPTIONS_ENDPOINTS } from "../api/endpoints";
 import { PaginatedResponse, Subscription, ManualSubscriptionRequest } from "../types/api.types";
 
-export const useSubscriptions = (page: number, size: number, filters: { deviceId?: string; plan?: string; status?: string } = {}) => {
-  const hasFilters = !!(filters.deviceId || filters.plan || filters.status);
-  const effectivePage = hasFilters ? 0 : page;
-  const effectiveSize = hasFilters ? 1000 : size; // Fetch all when filtering
+export interface SubscriptionFilters {
+  deviceId?: string;
+  plan?: string;
+  status?: string;
+}
 
+export const useSubscriptions = (page: number, size: number, filters?: SubscriptionFilters) => {
   return useQuery<PaginatedResponse<Subscription>, Error>({
-    queryKey: ["subscriptions", effectivePage, effectiveSize, filters],
+    queryKey: ["subscriptions", page, size, filters],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: effectivePage.toString(),
-        size: effectiveSize.toString(),
-      });
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("size", size.toString());
+      if (filters) {
+        if (filters.deviceId) params.append("deviceId", filters.deviceId);
+        if (filters.plan) params.append("plan", filters.plan);
+        if (filters.status) params.append("status", filters.status);
+      }
       const { data } = await apiClient.get<PaginatedResponse<Subscription>>(
         `${SUBSCRIPTIONS_ENDPOINTS.LIST}?${params.toString()}`
       );
