@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Form, Button, Card, InputGroup, Alert } from 'react-bootstrap';
-import { FiUser, FiLock, FiArrowRight } from 'react-icons/fi';
+import { FiUser, FiLock, FiArrowRight  ,FiEye, FiEyeOff} from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { useLogin } from '../../hooks/useAuth';
+import { useLogin  } from '../../hooks/useAuth';
 import './Auth.css';
 
 const Login = () => {
@@ -12,6 +12,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const loginMutation = useLogin();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -86,19 +87,33 @@ const Login = () => {
                 </InputGroup>
               </Form.Group>
 
-              <Form.Group className="mb-3 custom-input-group">
-                <Form.Label className="text-light small mb-2">Password</Form.Label>
-                <InputGroup>
-                  <InputGroup.Text><FiLock /></InputGroup.Text>
-                  <Form.Control 
-                    type="password" 
-                    placeholder="Enter password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </InputGroup>
-              </Form.Group>
+       <Form.Group className="mb-3 custom-input-group">
+  <Form.Label className="text-light small mb-2">
+    Password
+  </Form.Label>
 
+  <InputGroup className="password-group">
+    <InputGroup.Text>
+      <FiLock />
+    </InputGroup.Text>
+
+    <Form.Control
+      type={showPassword ? "text" : "password"}
+      placeholder="Enter password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      required
+    />
+
+    <button
+      type="button"
+      className="password-toggle-btn"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? <FiEyeOff /> : <FiEye />}
+    </button>
+  </InputGroup>
+</Form.Group>
               <div className="d-flex justify-content-end mb-4">
                 <Button 
                   variant="link" 

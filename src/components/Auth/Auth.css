@@ -195,3 +195,32 @@
     padding: 30px 20px;
   }
 }
+
+.password-group {
+  position: relative;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(255, 255, 255, 0.7);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.password-toggle-btn:hover {
+  color: #fff;
+}
+
+.password-group .form-control {
+  padding-right: 45px;
+}
