@@ -17,6 +17,7 @@ import ChangePassword from './components/Auth/ChangePassword';
 import ForgotPassword from './components/Auth/ForgotPassword';
 import ResetPassword from './components/Auth/ResetPassword';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import PricingTiers from './components/PricingTiers/PricingTiers';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
               <Route path="/support-tickets" element={<SupportTickets />} />
               <Route path="/admin-management" element={<AdminManagement />} />
               <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/pricing-tiers" element={<PricingTiers />} />
             </Route>
           </Routes>
         </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiUsers, FiDollarSign, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock, FiLogOut } from 'react-icons/fi';
+import { FiPlay, FiUsers, FiDollarSign, FiLayers,FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock, FiLogOut } from 'react-icons/fi';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSupportTicketsCount } from '../../hooks/useSupportTickets';
@@ -32,6 +32,7 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
     { id: 'users', icon: <FiUserCheck />, path: '/users', label: 'Users' },
     { id: 'support-tickets', icon: <FiLifeBuoy />, path: '/support-tickets', label: 'Support', showBadge: true, badgeKey: 'openSupportTickets' },
     { id: 'change-password', icon: <FiLock />, path: '/change-password', label: 'Change Password' },
+    { id: 'pricing-tiers', icon: <FiLayers />, path: '/pricing-tiers', label: 'Pricing Tiers' },
   ];
 
   const superAdminItems = [

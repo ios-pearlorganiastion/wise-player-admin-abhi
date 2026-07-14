@@ -213,3 +213,20 @@ export interface SupportTicket {
 export interface UpdateTicketStatusRequest {
   status: TicketStatus;
 }
+
+export interface PricingTier {
+  id: string;
+  name: string;
+  minQuantity: number;
+  maxQuantity: number | null; // null = unlimited
+  unitPrice: number;
+  createdAt: string | null; // API returns null on create response
+  updatedAt: string | null;
+}
+
+export interface PricingTierRequest {
+  name: string;
+  minQuantity: number;
+  maxQuantity: number | null;
+  unitPrice: number;
+}

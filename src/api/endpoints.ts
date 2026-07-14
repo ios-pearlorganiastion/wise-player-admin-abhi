@@ -78,3 +78,9 @@ export const SUPPORT_TICKETS_ENDPOINTS = {
   GET_BY_ID: (id: string) => `/api/admin/support/tickets/${id}`,
   UPDATE_STATUS: (id: string) => `/api/admin/support/tickets/${id}/status`,
 };
+
+export const PRICING_TIER_ENDPOINTS = {
+  LIST: "/api/admin/pricing-tiers",
+  CREATE: "/api/admin/pricing-tiers",
+  UPDATE: (id: string) => `/api/admin/pricing-tiers/${id}`,
+};
