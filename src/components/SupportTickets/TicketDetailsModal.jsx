@@ -3,6 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiUser, FiMail, FiCpu, FiMessageSquare, FiPaperclip, FiSettings, FiCheckCircle } from 'react-icons/fi';
 import { useUpdateTicketStatus } from '../../hooks/useSupportTickets';
 
+const InfoRow = ({ icon, label, children }) => (
+  <div>
+    <div className="flex items-center gap-1.5 text-subtle text-xs font-medium uppercase tracking-wide mb-1.5">
+      {icon} {label}
+    </div>
+    <div className="text-ink text-sm">{children}</div>
+  </div>
+);
+
 const TicketDetailsModal = ({ ticket, onClose }) => {
   const updateStatusMutation = useUpdateTicketStatus();
   const [localStatus, setLocalStatus] = useState(ticket?.status);
@@ -16,10 +25,17 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
 
   const statuses = [
     { key: 'OPEN', label: 'Open' },
-    { key: 'IN_PROGRESS', label: 'In Progress' },
+    { key: 'IN_PROGRESS', label: 'In progress' },
     { key: 'RESOLVED', label: 'Resolved' },
     { key: 'CLOSED', label: 'Closed' }
   ];
+
+  const statusStyles = {
+    OPEN: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    IN_PROGRESS: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+    RESOLVED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    CLOSED: 'bg-white/5 text-subtle border-line',
+  };
 
   const getFullUrl = (url) => {
     if (!url) return '';
@@ -36,85 +52,95 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
 
   return (
     <AnimatePresence>
-      <div className="ticket-detail-overlay" onClick={onClose}>
-        <motion.div 
+      <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/60" />
+        <motion.div
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="ticket-detail-panel"
+          className="relative w-full sm:w-[420px] h-full bg-surface border-l border-line overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="ticket-detail-header">
+          <div className="sticky top-0 bg-surface flex items-start justify-between px-5 py-4 border-b border-line z-10">
             <div>
-              <h2 className="m-0 text-white">Ticket Details</h2>
-              <p className="text-muted small mt-1">ID: {ticket.id}</p>
+              <h2 className="font-display font-semibold text-ink text-base">Ticket details</h2>
+              <p className="text-subtle text-xs mt-1">ID: {ticket.id}</p>
             </div>
-            <button className="btn-close-neon" onClick={onClose}>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-subtle hover:bg-surface2 hover:text-ink transition-colors"
+            >
               <FiX />
             </button>
           </div>
 
-          <div className="ticket-detail-body">
-            <div className="ticket-info-group">
-              <div className="ticket-info-label"><FiUser className="me-1" /> Customer</div>
-              <div className="ticket-info-value fw-bold">{ticket.firstName} {ticket.lastName}</div>
-            </div>
+          <div className="p-5 space-y-5">
+            <InfoRow icon={<FiUser />} label="Customer">
+              <span className="font-medium">{ticket.firstName} {ticket.lastName}</span>
+            </InfoRow>
 
-            <div className="ticket-info-group">
-              <div className="ticket-info-label"><FiMail className="me-1" /> Email Address</div>
-              <div className="ticket-info-value">{ticket.email}</div>
-            </div>
+            <InfoRow icon={<FiMail />} label="Email address">{ticket.email}</InfoRow>
 
-            <div className="ticket-info-group">
-              <div className="ticket-info-label"><FiCpu className="me-1" /> MAC Address</div>
-              <div className="ticket-info-value font-monospace">{ticket.macAddress}</div>
-            </div>
+            <InfoRow icon={<FiCpu />} label="Mac address">
+              <span className="font-mono text-xs">{ticket.macAddress}</span>
+            </InfoRow>
 
-            <div className="ticket-info-group">
-              <div className="ticket-info-label"><FiSettings className="me-1" /> Inquiry Type</div>
-              <div className="ticket-info-value"><span className="text-info">{ticket.inquiryType}</span></div>
-            </div>
+            <InfoRow icon={<FiSettings />} label="Inquiry type">
+              <span className="text-maroon-light">{ticket.inquiryType}</span>
+            </InfoRow>
 
-            <div className="ticket-info-group">
-              <div className="ticket-info-label"><FiMessageSquare className="me-1" /> Message</div>
-              <div className="ticket-message-box">
+            <InfoRow icon={<FiMessageSquare />} label="Message">
+              <div className="bg-surface2 border border-line rounded-lg p-3 text-sm leading-relaxed whitespace-pre-wrap">
                 {ticket.message}
               </div>
-            </div>
+            </InfoRow>
 
             {ticket.attachmentUrl && (
-              <div className="ticket-info-group">
-                <div className="ticket-info-label"><FiPaperclip className="me-1" /> Attachment</div>
-                <div className="mt-2">
-                  <a href={getFullUrl(ticket.attachmentUrl)} target="_blank" rel="noopener noreferrer" className="btn btn-outline-info btn-sm">
-                    View Original
+              <InfoRow icon={<FiPaperclip />} label="Attachment">
+                <div className="space-y-2">
+                  <a
+                    href={getFullUrl(ticket.attachmentUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-xs font-medium text-ink border border-line hover:border-maroon-light hover:text-maroon-light rounded-lg px-3 py-1.5 transition-colors"
+                  >
+                    View attachment
                   </a>
                   {isImage(ticket.attachmentUrl) && (
-                    <div className="attachment-preview">
-                      <img src={getFullUrl(ticket.attachmentUrl)} alt="Ticket attachment" />
-                    </div>
+                    <img
+                      src={getFullUrl(ticket.attachmentUrl)}
+                      alt="Ticket attachment"
+                      className="w-full rounded-lg border border-line"
+                    />
                   )}
                 </div>
-              </div>
+              </InfoRow>
             )}
 
-            <div className="ticket-info-group mt-5">
-              <div className="ticket-info-label"><FiCheckCircle className="me-1" /> Update Status</div>
-              <div className="status-control-group">
+            <div className="pt-2 border-t border-line">
+              <div className="flex items-center gap-1.5 text-subtle text-xs font-medium uppercase tracking-wide mb-2.5">
+                <FiCheckCircle /> Update status
+              </div>
+              <div className="flex flex-wrap gap-2">
                 {statuses.map((s) => (
                   <button
                     key={s.key}
-                    className={`status-btn ${localStatus === s.key ? `active ${s.key}` : ''}`}
                     onClick={() => handleStatusUpdate(s.key)}
                     disabled={updateStatusMutation.isPending}
+                    className={`text-xs font-medium rounded-lg px-3 py-2 border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                      localStatus === s.key
+                        ? statusStyles[s.key]
+                        : 'text-subtle border-line hover:text-ink hover:border-line'
+                    }`}
                   >
                     {s.label}
                   </button>
                 ))}
               </div>
               {updateStatusMutation.isPending && (
-                <div className="mt-2 text-info small">Updating status...</div>
+                <p className="mt-2 text-maroon-light text-xs">Updating status...</p>
               )}
             </div>
           </div>

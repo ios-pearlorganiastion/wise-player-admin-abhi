@@ -1,30 +1,29 @@
 import React, { useState, useCallback } from 'react';
-import { Row, Col, Badge, Image, Spinner, Alert, Button } from 'react-bootstrap';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiTrendingUp, FiDollarSign, FiPlay, FiActivity, FiLogOut, FiMenu } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+import { FiTrendingUp, FiDollarSign, FiActivity } from 'react-icons/fi';
 import { usePayments, usePaymentStats } from '../../hooks/usePayments';
 import { useAuthContext } from '../../contexts/AuthContext';
-import ColumnFilter from '../Shared/ColumnFilter';
+import ColumnFilter from '../common/ColumnFilter';
+import Pagination from '../common/Pagination';
 import Sidebar from '../Shared/Sidebar';
-import '../Dashboard/Dashboard.css';
+import Card from '../common/Card';
+import Badge from '../common/Badge';
+import Spinner from '../common/Spinner';
+import ErrorAlert from '../common/ErrorAlert';
+import HamburgerIcon from '../common/HamburgerIcon';
+import ProfileMenu from '../common/ProfileMenu';
 
 const Payments = () => {
-  const navigate = useNavigate();
-  const { logout, user } = useAuthContext();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user } = useAuthContext();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
 
-  // Filter states
   const [filters, setFilters] = useState({
     paymentId: '',
     deviceId: '',
     status: ''
   });
 
-  // Active filters sent to server (empty strings omitted)
   const activeFilters = {
     ...(filters.paymentId ? { paymentId: filters.paymentId } : {}),
     ...(filters.deviceId ? { deviceId: filters.deviceId } : {}),
@@ -38,206 +37,159 @@ const Payments = () => {
 
   const handleFilterChange = useCallback((column, value) => {
     setFilters(prev => ({ ...prev, [column]: value }));
-    setPage(0); // Reset to first page on filter change
+    setPage(0);
   }, []);
 
   const stats = [
-    { title: "Total Revenue", value: `€${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, color: "n-blue", shadow: "rgba(0, 212, 255, 0.4)" },
-    { title: "Successful Transactions", value: statsData?.successfulTransactions || 0, icon: <FiTrendingUp />, color: "n-green", shadow: "rgba(57, 255, 20, 0.4)" },
-    { title: "Total Transactions", value: statsData?.totalTransactions || 0, icon: <FiActivity />, color: "n-yellow", shadow: "rgba(255, 215, 0, 0.4)" },
+    { title: 'Total revenue', value: `€${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, iconBg: 'bg-sky-500/10', iconText: 'text-sky-400' },
+    { title: 'Successful transactions', value: statsData?.successfulTransactions || 0, icon: <FiTrendingUp />, iconBg: 'bg-emerald-500/10', iconText: 'text-emerald-400' },
+    { title: 'Total transactions', value: statsData?.totalTransactions || 0, icon: <FiActivity />, iconBg: 'bg-amber-500/10', iconText: 'text-amber-400' },
   ];
 
+  const gridCols = 'grid-cols-[130px_minmax(150px,1.8fr)_110px_100px_100px_90px_110px]';
+
   return (
-    <div className="dashboard-container">
-      <Sidebar 
-        activePage="payments" 
-        isMobileOpen={isMobileOpen} 
-        onMobileClose={() => setIsMobileOpen(false)} 
+    <div className="flex min-h-screen bg-base">
+      <Sidebar
+        activePage="payments"
+        isMobileOpen={isMobileOpen}
+        onMobileClose={() => setIsMobileOpen(false)}
       />
 
-      <div className="content-area">
-        <header className="dash-header">
-          <div className="header-left-group">
-            <button 
-              className="mobile-toggle-btn" 
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="h-16 md:h-20 shrink-0 flex items-center justify-between gap-4 px-4 md:px-6 border-b border-line">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
               onClick={() => setIsMobileOpen(true)}
+              className="md:hidden text-subtle w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface2 shrink-0"
+              aria-label="Open menu"
             >
-              <FiMenu />
+              <HamburgerIcon />
             </button>
-            <div className="welcome-text">
-              <h1>Revenue & <span className="highlight">Payments</span></h1>
-              <p>Track all transactions and revenue metrics</p>
+            <div className="min-w-0">
+              <h1 className="font-display font-semibold text-lg md:text-xl text-ink truncate">
+                Revenue &amp; <span className="text-maroon-light">Payments</span>
+              </h1>
+              <p className="hidden sm:block text-subtle text-sm mt-0.5">Track all transactions and revenue metrics</p>
             </div>
           </div>
-          <div className="profile-section">
-            <div className="notif-bell"><FiActivity /></div>
-            
-            <div className="profile-dropdown-container">
-              <div 
-                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-              >
-                <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
-                  roundedCircle 
-                  className="admin-avatar m-0" 
-                />
-              </div>
 
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="profile-menu"
-                  >
-                    <div className="px-3 py-2">
-                       <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-white">{user?.role}</div>
-                    </div>
-                    <div className="profile-menu-divider"></div>
-                    <div className="profile-menu-item logout" onClick={logout}>
-                      <FiLogOut /> Logout
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button className="relative w-9 h-9 hidden sm:flex items-center justify-center rounded-lg hover:bg-surface2 text-subtle">
+              <FiActivity />
+            </button>
+            <ProfileMenu user={user} />
           </div>
         </header>
 
-        {isStatsLoading ? (
-          <div className="text-center my-4"><Spinner animation="border" variant="info" /></div>
-        ) : statsError ? (
-          <Alert variant="danger" className="mb-4">Error loading stats: {statsError.message}</Alert>
-        ) : (
-          <Row className="g-4 mb-4">
-            {stats.map((stat, i) => (
-              <Col key={i} lg={4} md={12}>
-                <motion.div 
-                  whileHover={{ y: -5 }}
-                  className={`stat-card-new ${stat.color}`}
-                  style={{ boxShadow: `0 8px 25px ${stat.shadow}`, minHeight: '120px' }}
-                >
-                  <div className="stat-info">
-                    <span className="stat-label">{stat.title}</span>
-                    <h2 className="stat-number">{stat.value}</h2>
-                  </div>
-                  <div className="stat-icon-box">{stat.icon}</div>
-                </motion.div>
-              </Col>
-            ))}
-          </Row>
-        )}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
 
-        <div className="recent-section">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-             <h3 className="section-title m-0">Transactions</h3>
-             <Badge bg="dark" className="text-info border border-secondary px-3 py-2">
-               Showing {paymentsData?.totalElements ?? 0} results
-             </Badge>
-          </div>
-          
-          <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-            <div className="table-header-row payment-table-grid">
-              <div className="th-cell align-left">
-                PAYMENT ID <ColumnFilter column="paymentId" onFilterChange={handleFilterChange} placeholder="ID" />
-              </div>
-              <div className="th-cell align-left">
-                MAC ADDRESS <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="MAC/ID" />
-              </div>
-
-              <div className="th-cell align-left">PLAN</div>
-              <div className="th-cell align-right">AMOUNT</div>
-              <div className="th-cell align-left">DATE</div>
-              <div className="th-cell align-left">TIME</div>
-              <div className="th-cell align-center">
-                STATUS
-                <ColumnFilter 
-                  column="status" 
-                  onFilterChange={handleFilterChange} 
-                  placeholder="Status" 
-                  options={[
-                    {label: 'Pending', value: 'PENDING'}, 
-                    {label: 'Success', value: 'SUCCESS'}, 
-                    {label: 'Failed', value: 'FAILED'}, 
-                    {label: 'Refunded', value: 'REFUNDED'}, 
-                    {label: 'Disputed', value: 'DISPUTED'}, 
-                    {label: 'Reversed', value: 'REVERSED'}
-                  ]}
-                  alignRight
-                />
-              </div>
-            </div>
-
-            {isPaymentsLoading ? (
-              <div className="text-center my-5"><Spinner animation="border" variant="info" /></div>
-            ) : paymentsError ? (
-              <Alert variant="danger" className="m-3">Error loading payments: {paymentsError.message}</Alert>
-            ) : payments.length === 0 ? (
-              <div className="p-4 text-center text-white">No matching transactions found.</div>
-            ) : (
-              payments.map((payment, index) => (
-                <motion.div 
-                  key={payment.paymentId}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="table-data-row align-items-center payment-table-grid"
-                >
-                  <div className="td-cell align-left text-white-50 small wrap-text" title={payment.paymentId}>
-                    {payment.paymentId}
+          {isStatsLoading ? (
+            <div className="flex justify-center py-8"><Spinner /></div>
+          ) : statsError ? (
+            <ErrorAlert>Error loading stats: {statsError.message}</ErrorAlert>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+              {stats.map((stat, i) => (
+                <Card key={i} className="flex items-center justify-between">
+                  <div className="min-w-0">
+                    <p className="text-subtle text-xs uppercase tracking-wide truncate">{stat.title}</p>
+                    <p className="font-mono font-semibold text-xl md:text-2xl text-ink mt-1">{stat.value}</p>
                   </div>
-                  <div className="td-cell align-left px-2 wrap-text">
-                    <div className="fw-bold text-white" title={payment.macAddress}>
-                      {payment.macAddress || <span className="text-secondary fst-italic">N/A</span>}
-                    </div>
+                  <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.iconBg} ${stat.iconText}`}>
+                    {stat.icon}
                   </div>
-
-                  <div className="td-cell align-left">
-                    <Badge bg="dark" className="border border-secondary text-info">
-                      {payment.plan || payment.planName || payment.subscriptionPlan || 'N/A'}
-                    </Badge>
-                  </div>
-                  <div className="td-cell align-right fw-bold text-success">{payment.amount} €</div>
-                  <div className="td-cell align-left text-white">
-                    {new Date(payment.createdAt).toLocaleDateString()}
-                  </div>
-                  <div className="td-cell align-left text-white-50 small">
-                    {new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                  <div className="td-cell align-center">
-                    <Badge className={`status-pill ${payment.status?.toLowerCase() || 'pending'}`}>
-                      {payment.status}
-                    </Badge>
-                  </div>
-                </motion.div>
-              ))
-            )}
-          </div>
-          
-          {/* Pagination Controls */}
-          {paymentsData && paymentsData.totalPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center mt-3">
-              <Button 
-                variant="outline-info" 
-                disabled={paymentsData.first} 
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-white">Page {page + 1} of {paymentsData.totalPages}</span>
-              <Button 
-                variant="outline-info" 
-                disabled={paymentsData.last} 
-                onClick={() => setPage(p => p + 1)}
-              >
-                Next
-              </Button>
+                </Card>
+              ))}
             </div>
           )}
-        </div>
+
+          <Card noPadding>
+            <div className="flex items-center justify-between px-4 md:px-5 py-4 border-b border-line">
+              <h2 className="font-display font-semibold text-sm md:text-base text-ink">Transactions</h2>
+              <span className="text-[11px] font-mono text-subtle bg-surface2 border border-line rounded-full px-3 py-1.5">
+                {paymentsData?.totalElements ?? 0} results
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <div className={`grid ${gridCols} gap-3 px-4 md:px-5 py-3 min-w-[980px] border-b border-line`}>
+                <div className="flex items-center gap-1 text-subtle text-xs font-medium uppercase tracking-wide">
+                  Payment ID <ColumnFilter column="paymentId" onFilterChange={handleFilterChange} placeholder="ID" />
+                </div>
+                <div className="flex items-center gap-1 text-subtle text-xs font-medium uppercase tracking-wide">
+                  Mac address <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="MAC/ID" />
+                </div>
+                <div className="text-subtle text-xs font-medium uppercase tracking-wide">Plan</div>
+                <div className="text-subtle text-xs font-medium uppercase tracking-wide text-right">Amount</div>
+                <div className="text-subtle text-xs font-medium uppercase tracking-wide">Date</div>
+                <div className="text-subtle text-xs font-medium uppercase tracking-wide">Time</div>
+                <div className="flex items-center gap-1 justify-end text-subtle text-xs font-medium uppercase tracking-wide">
+                  Status
+                  <ColumnFilter
+                    column="status"
+                    onFilterChange={handleFilterChange}
+                    placeholder="Status"
+                    options={[
+                      { label: 'Pending', value: 'PENDING' },
+                      { label: 'Success', value: 'SUCCESS' },
+                      { label: 'Failed', value: 'FAILED' },
+                      { label: 'Refunded', value: 'REFUNDED' },
+                      { label: 'Disputed', value: 'DISPUTED' },
+                      { label: 'Reversed', value: 'REVERSED' }
+                    ]}
+                    alignRight
+                  />
+                </div>
+              </div>
+
+              {isPaymentsLoading ? (
+                <div className="flex justify-center py-10"><Spinner /></div>
+              ) : paymentsError ? (
+                <div className="p-4"><ErrorAlert>Error loading payments: {paymentsError.message}</ErrorAlert></div>
+              ) : payments.length === 0 ? (
+                <div className="p-8 text-center text-subtle text-sm">No matching transactions found.</div>
+              ) : (
+                payments.map((payment) => (
+                  <div
+                    key={payment.paymentId}
+                    className={`grid ${gridCols} gap-3 items-center px-4 md:px-5 py-3.5 min-w-[980px] border-b border-line last:border-b-0 hover:bg-surface2/60 transition-colors`}
+                  >
+                    <div className="font-mono text-subtle text-xs truncate" title={payment.paymentId}>
+                      {payment.paymentId}
+                    </div>
+                    <div className="font-medium text-ink text-sm truncate" title={payment.macAddress}>
+                      {payment.macAddress || <span className="text-subtle italic">N/A</span>}
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-medium text-sky-400 bg-sky-500/10 rounded-full px-2 py-1">
+                        {payment.plan || payment.planName || payment.subscriptionPlan || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="font-mono font-semibold text-emerald-400 text-sm text-right">{payment.amount} €</div>
+                    <div className="text-subtle text-sm">{new Date(payment.createdAt).toLocaleDateString()}</div>
+                    <div className="text-subtle text-sm">
+                      {new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    <div className="flex justify-end">
+                      <Badge status={payment.status || 'pending'}>{payment.status}</Badge>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {paymentsData && paymentsData.totalPages > 1 ? (
+              <div className="px-4 md:px-5 py-4 border-t border-line">
+                <Pagination
+                  currentPage={page}
+                  totalPages={paymentsData.totalPages}
+                  onPageChange={(p) => setPage(p)}
+                />
+              </div>
+            ) : null}
+          </Card>
+        </main>
       </div>
     </div>
   );

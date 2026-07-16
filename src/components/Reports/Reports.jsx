@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { Row, Col, Badge, Image, Spinner, Alert, Form, Button, Card } from 'react-bootstrap';
-import { FiCalendar, FiTrendingUp, FiUsers, FiStar, FiActivity, FiLogOut, FiBarChart2, FiMenu } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { FiCalendar, FiTrendingUp, FiUsers, FiStar, FiActivity, FiBarChart2 } from 'react-icons/fi';
 import Sidebar from '../Shared/Sidebar';
 import { useRevenueReport, useDeviceReport, useSubscriptionReport, useResellerReport } from '../../hooks/useReports';
 import { useAuthContext } from '../../contexts/AuthContext';
-import '../Dashboard/Dashboard.css';
+import Card from '../common/Card';
+import Input from '../common/Input';
+import Button from '../common/Button';
+import Spinner from '../common/Spinner';
+import ErrorAlert from '../common/ErrorAlert';
+import HamburgerIcon from '../common/HamburgerIcon';
+import ProfileMenu from '../common/ProfileMenu';
 
 const Reports = () => {
-  const { user, logout } = useAuthContext();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user } = useAuthContext();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  
-  // Date range defaults - last 30 days
+
   const today = new Date().toISOString().split('T')[0];
   const [fromDate, setFromDate] = useState(() => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
   const [toDate, setToDate] = useState(today);
@@ -25,267 +27,217 @@ const Reports = () => {
   const { data: subData, isLoading: isSubLoading, error: subError } = useSubscriptionReport(fromDate, toDate);
   const { data: resellerData, isLoading: isResLoading, error: resError } = useResellerReport(resellerPage, resellerPageSize);
 
-  const COLORS = ['#00F5FF', '#9B5CFF', '#39FF14', '#FFD700', '#FF7F50'];
-
   return (
-    <div className="dashboard-container">
-      <Sidebar 
-        activePage="reports" 
-        isMobileOpen={isMobileOpen} 
-        onMobileClose={() => setIsMobileOpen(false)} 
+    <div className="flex min-h-screen bg-base">
+      <Sidebar
+        activePage="reports"
+        isMobileOpen={isMobileOpen}
+        onMobileClose={() => setIsMobileOpen(false)}
       />
-      <div className="content-area">
-        <header className="dash-header">
-          <div className="header-left-group">
-            <button 
-              className="mobile-toggle-btn" 
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="h-16 md:h-20 shrink-0 flex items-center justify-between gap-4 px-4 md:px-6 border-b border-line">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
               onClick={() => setIsMobileOpen(true)}
+              className="md:hidden text-subtle w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface2 shrink-0"
+              aria-label="Open menu"
             >
-              <FiMenu />
+              <HamburgerIcon />
             </button>
-            <div className="welcome-text">
-              <h1>Reports & <span className="highlight">Analytics</span></h1>
-              <p>Visual performance tracking and statistics</p>
+            <div className="min-w-0">
+              <h1 className="font-display font-semibold text-lg md:text-xl text-ink truncate">
+                Reports &amp; <span className="text-maroon-light">Analytics</span>
+              </h1>
+              <p className="hidden sm:block text-subtle text-sm mt-0.5">Visual performance tracking and statistics</p>
             </div>
           </div>
-          <div className="profile-section">
-            <div className="notif-bell"><FiActivity /></div>
-            
-            <div className="profile-dropdown-container">
-              <div 
-                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-              >
-                <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=00F5FF&color=000`} 
-                  roundedCircle 
-                  className="admin-avatar m-0" 
-                />
-              </div>
 
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="profile-menu"
-                  >
-                    <div className="px-3 py-2">
-                       <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-white">{user?.role}</div>
-                    </div>
-                    <div className="profile-menu-divider"></div>
-                    <div className="profile-menu-item logout" onClick={logout}>
-                      <FiLogOut /> Logout
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button className="relative w-9 h-9 hidden sm:flex items-center justify-center rounded-lg hover:bg-surface2 text-subtle">
+              <FiActivity />
+            </button>
+            <ProfileMenu user={user} />
           </div>
         </header>
 
-        {/* Date Filters Area */}
-        <div className="recent-section mb-4 p-4">
-          <Row className="align-items-center">
-            <Col md={4} className="d-flex align-items-center mb-3 mb-md-0">
-              <FiCalendar className="text-info me-3 fs-3" />
-              <div>
-                <label className="text-white-50 d-block small">From Date</label>
-                <Form.Control 
-                  type="date" 
-                  value={fromDate} 
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+
+          {/* Date range */}
+          <Card>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+              <div className="flex items-center gap-3">
+                <FiCalendar className="text-maroon-light text-xl shrink-0" />
+                <Input
+                  label="From date"
+                  type="date"
+                  value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  className="bg-dark text-white border-secondary"
+                  className="!mb-0"
                 />
               </div>
-            </Col>
-            <Col md={4} className="d-flex align-items-center mb-3 mb-md-0">
-               <FiCalendar className="text-info me-3 fs-3" />
-               <div>
-                <label className="text-white-50 d-block small">To Date</label>
-                <Form.Control 
-                  type="date" 
-                  value={toDate} 
+              <div className="flex items-center gap-3">
+                <FiCalendar className="text-maroon-light text-xl shrink-0" />
+                <Input
+                  label="To date"
+                  type="date"
+                  value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
-                  className="bg-dark text-white border-secondary"
+                  className="!mb-0"
                 />
               </div>
-            </Col>
-            <Col md={4} className="text-end">
-               <div className="small text-white-50">Range: {new Date(fromDate).toLocaleDateString()} - {new Date(toDate).toLocaleDateString()}</div>
-            </Col>
-          </Row>
-        </div>
-
-        <Row className="g-4">
-          {/* Revenue Overview Card */}
-          <Col lg={4}>
-            <div className="recent-section h-100">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 className="section-title m-0"><FiTrendingUp className="me-2 text-danger" /> Revenue</h3>
-                {isRevLoading && <Spinner animation="border" variant="danger" size="sm" />}
+              <div className="text-subtle text-sm lg:text-right">
+                Range: {new Date(fromDate).toLocaleDateString()} – {new Date(toDate).toLocaleDateString()}
               </div>
-              
+            </div>
+          </Card>
+
+          {/* Metric cards */}
+          <div className="grid lg:grid-cols-3 gap-4">
+            <Card>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-semibold text-ink text-sm flex items-center gap-2">
+                  <FiTrendingUp className="text-maroon-light" /> Revenue
+                </h3>
+                {isRevLoading ? <Spinner size={16} /> : null}
+              </div>
               {revError ? (
-                <Alert variant="danger" className="py-2">Failed to load revenue</Alert>
+                <ErrorAlert>Failed to load revenue</ErrorAlert>
               ) : (
-                <div className="text-center py-3">
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <h2 className="display-4 fw-bold highlight mb-0">€{Number(revenueData?.totalRevenue || 0).toFixed(2)}</h2>
-                    <p className="text-white-50 mt-1">Total Period Revenue</p>
-                  </motion.div>
-                  
-                  <div className="mt-4 pt-2 border-top border-secondary d-flex justify-content-around">
+                <div className="text-center py-2">
+                  <h2 className="font-mono font-semibold text-3xl text-maroon-light">
+                    €{Number(revenueData?.totalRevenue || 0).toFixed(2)}
+                  </h2>
+                  <p className="text-subtle text-sm mt-1">Total period revenue</p>
+
+                  <div className="mt-5 pt-4 border-t border-line flex justify-around">
                     <div className="text-center">
-                       <div className="small text-white-50 mb-1">Successful</div>
-                       <Badge bg="success" className="p-2 px-3 fs-6">{revenueData?.successfulPayments || 0}</Badge>
+                      <div className="text-subtle text-xs mb-1.5">Successful</div>
+                      <span className="text-sm font-medium text-emerald-400 bg-emerald-500/10 rounded-full px-3 py-1">
+                        {revenueData?.successfulPayments || 0}
+                      </span>
                     </div>
                     <div className="text-center">
-                       <div className="small text-white-50 mb-1">Failed</div>
-                       <Badge bg="danger" className="p-2 px-3 fs-6">{revenueData?.failedPayments || 0}</Badge>
+                      <div className="text-subtle text-xs mb-1.5">Failed</div>
+                      <span className="text-sm font-medium text-maroon-light bg-maroon/15 rounded-full px-3 py-1">
+                        {revenueData?.failedPayments || 0}
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
-            </div>
-          </Col>
+            </Card>
 
-          {/* Registrations Card */}
-          <Col lg={4}>
-            <div className="recent-section h-100">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 className="section-title m-0"><FiUsers className="me-2 text-info" /> Registrations</h3>
-                {isDevLoading && <Spinner animation="border" variant="info" size="sm" />}
+            <Card>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-semibold text-ink text-sm flex items-center gap-2">
+                  <FiUsers className="text-sky-400" /> Registrations
+                </h3>
+                {isDevLoading ? <Spinner size={16} /> : null}
               </div>
-              
               {devError ? (
-                <Alert variant="danger" className="py-2">Failed to load devices</Alert>
+                <ErrorAlert>Failed to load devices</ErrorAlert>
               ) : (
-                <div className="text-center py-4">
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                  >
-                    <h2 className="display-4 fw-bold text-info mb-0">{deviceData?.newDevices || 0}</h2>
-                    <p className="text-white-50 mt-2">New Registrations</p>
-                  </motion.div>
-                  <div className="mt-5 text-info-50 small">
-                    <FiActivity className="me-1" /> Active Device Growth
+                <div className="text-center py-2">
+                  <h2 className="font-mono font-semibold text-3xl text-sky-400">{deviceData?.newDevices || 0}</h2>
+                  <p className="text-subtle text-sm mt-1">New registrations</p>
+                  <div className="mt-8 flex items-center justify-center gap-1.5 text-subtle text-xs">
+                    <FiActivity /> Active device growth
                   </div>
                 </div>
               )}
-            </div>
-          </Col>
+            </Card>
 
-          {/* Subscriptions Card */}
-          <Col lg={4}>
-            <div className="recent-section h-100">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 className="section-title m-0"><FiStar className="me-2 text-warning" /> Subscriptions</h3>
-                {isSubLoading && <Spinner animation="border" variant="warning" size="sm" />}
+            <Card>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-semibold text-ink text-sm flex items-center gap-2">
+                  <FiStar className="text-amber-400" /> Subscriptions
+                </h3>
+                {isSubLoading ? <Spinner size={16} /> : null}
               </div>
-              
               {subError ? (
-                <Alert variant="danger" className="py-2">Failed to load subscriptions</Alert>
+                <ErrorAlert>Failed to load subscriptions</ErrorAlert>
               ) : (
-                <div className="text-center py-4">
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                  >
-                    <h2 className="display-4 fw-bold text-warning mb-0">{subData?.newSubscriptions || 0}</h2>
-                    <p className="text-white-50 mt-2">New Active Subscriptions</p>
-                  </motion.div>
-                  <div className="mt-5 text-warning-50 small">
-                    <FiStar className="me-1" /> Revenue Contributing Subs
+                <div className="text-center py-2">
+                  <h2 className="font-mono font-semibold text-3xl text-amber-400">{subData?.newSubscriptions || 0}</h2>
+                  <p className="text-subtle text-sm mt-1">New active subscriptions</p>
+                  <div className="mt-8 flex items-center justify-center gap-1.5 text-subtle text-xs">
+                    <FiStar /> Revenue contributing subs
                   </div>
                 </div>
               )}
-            </div>
-          </Col>
+            </Card>
+          </div>
 
-          {/* Resellers Table */}
-          <Col lg={12}>
-            <div className="recent-section mt-2">
-              <h3 className="section-title mb-4"><FiBarChart2 className="me-2 text-success" /> Reseller Performance</h3>
+          {/* Reseller performance */}
+          <div>
+            <h3 className="font-display font-semibold text-ink text-sm flex items-center gap-2 mb-3">
+              <FiBarChart2 className="text-emerald-400" /> Reseller performance
+            </h3>
+            <Card noPadding>
               {isResLoading ? (
-                 <div className="text-center py-5"><Spinner animation="border" variant="success" /></div>
+                <div className="flex justify-center py-10"><Spinner /></div>
               ) : resError ? (
-                <Alert variant="danger">Error loading reseller data</Alert>
+                <div className="p-4"><ErrorAlert>Error loading reseller data</ErrorAlert></div>
               ) : (
-                <div className="custom-table-wrapper">
-                  <div className="table-header-row reseller-table-grid">
-                    <div className="th-cell align-left">RESELLER</div>
-                    <div className="th-cell align-right">TOTAL USERS</div>
-                    <div className="th-cell align-right">ACTIVE USERS</div>
-                    <div className="th-cell align-center">PENDING REQ</div>
+                <div className="overflow-x-auto">
+                  <div className="grid grid-cols-[minmax(200px,2fr)_120px_120px_130px] gap-4 px-4 md:px-5 py-3 min-w-[700px] border-b border-line">
+                    <div className="text-subtle text-xs font-medium uppercase tracking-wide">Reseller</div>
+                    <div className="text-subtle text-xs font-medium uppercase tracking-wide text-right">Total users</div>
+                    <div className="text-subtle text-xs font-medium uppercase tracking-wide text-right">Active users</div>
+                    <div className="text-subtle text-xs font-medium uppercase tracking-wide text-center">Pending req</div>
                   </div>
-                {(resellerData?.content || []).map((res, i) => (
-                    <motion.div 
-                      key={res.id || i} 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="table-data-row reseller-table-grid" 
-                    >
-                      <div className="td-cell align-left wrap-text text-white fw-bold">
-                        <div className="movie-info px-2">
-                           <FiUsers className="text-success me-2" />
-                           {res.fullName} <span className="small text-white-50 ms-2">@{res.username}</span>
-                        </div>
-                      </div>
-                      <div className="td-cell align-right">{res.totalUsers || 0}</div>
-                      <div className="td-cell align-right text-info">{res.activeUsers || 0}</div>
-                      <div className="td-cell align-center">
-                        <Badge bg={res.pendingRequests > 0 ? "warning" : "dark"} className="p-2 border border-secondary text-white">
-                           {res.pendingRequests || 0}
-                        </Badge>
-                      </div>
-                    </motion.div>
-                  ))}
-                  {(!resellerData?.content || resellerData.content.length === 0) && (
-                    <div className="p-4 text-center text-white-50">No reseller data available</div>
-                  )}
 
-                  {/* Pagination Controls */}
-                  {resellerData && resellerData.totalPages > 1 && (
-                    <div className="d-flex justify-content-between align-items-center mt-3 p-3 border-top border-secondary border-opacity-10">
-                      <Button 
-                        variant="outline-info" 
-                        size="sm"
-                        disabled={resellerData.first} 
+                  {(resellerData?.content || []).map((res, i) => (
+                    <div
+                      key={res.id || i}
+                      className="grid grid-cols-[minmax(200px,2fr)_120px_120px_130px] gap-4 items-center px-4 md:px-5 py-3.5 min-w-[700px] border-b border-line last:border-b-0 hover:bg-surface2/60 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 font-medium text-ink text-sm truncate">
+                        <FiUsers className="text-emerald-400 shrink-0" />
+                        {res.fullName} <span className="text-subtle text-xs">@{res.username}</span>
+                      </div>
+                      <div className="text-ink text-sm text-right">{res.totalUsers || 0}</div>
+                      <div className="text-sky-400 text-sm text-right">{res.activeUsers || 0}</div>
+                      <div className="flex justify-center">
+                        <span
+                          className={`text-[11px] font-medium rounded-full px-2.5 py-1 ${
+                            res.pendingRequests > 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-white/5 text-subtle'
+                          }`}
+                        >
+                          {res.pendingRequests || 0}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!resellerData?.content || resellerData.content.length === 0) ? (
+                    <div className="p-10 text-center text-subtle text-sm">No reseller data available</div>
+                  ) : null}
+
+                  {resellerData && resellerData.totalPages > 1 ? (
+                    <div className="flex items-center justify-between px-4 md:px-5 py-4 border-t border-line">
+                      <Button
+                        variant="secondary"
+                        disabled={resellerData.first}
                         onClick={() => setResellerPage(p => Math.max(0, p - 1))}
-                        className="px-4 fw-bold"
                       >
                         Previous
                       </Button>
-                      <span className="text-white-50 small fw-bold">
-                        Page {resellerPage + 1} of {resellerData.totalPages}
-                      </span>
-                      <Button 
-                        variant="outline-info" 
-                        size="sm"
-                        disabled={resellerData.last} 
+                      <span className="text-subtle text-sm">Page {resellerPage + 1} of {resellerData.totalPages}</span>
+                      <Button
+                        variant="secondary"
+                        disabled={resellerData.last}
                         onClick={() => setResellerPage(p => p + 1)}
-                        className="px-4 fw-bold"
                       >
                         Next
                       </Button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               )}
-            </div>
-          </Col>
-        </Row>
+            </Card>
+          </div>
+        </main>
       </div>
     </div>
   );

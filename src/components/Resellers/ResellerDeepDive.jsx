@@ -1,20 +1,23 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Row, Col, Badge, Button, Table, Spinner } from 'react-bootstrap';
-import { 
-  FiArrowLeft, FiUsers, FiTrendingUp, FiCreditCard, 
-  FiActivity, FiMail, FiCalendar, FiUser 
+import {
+  FiArrowLeft, FiUsers, FiTrendingUp, FiCreditCard,
+  FiActivity, FiMail, FiCalendar, FiUser
 } from 'react-icons/fi';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, AreaChart, Area 
+import {
+  XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import { useResellerStats, useResellerAnalytics, useSubResellers } from '../../hooks/useResellers';
-import './Resellers.css';
+import Card from '../common/Card';
+import Badge from '../common/Badge';
+import Button from '../common/Button';
+import Spinner from '../common/Spinner';
+import Pagination from '../common/Pagination';
 
 const ResellerDeepDive = ({ reseller, onBack }) => {
   const [period, setPeriod] = useState('WEEK');
-  
+
   const startDate = useMemo(() => {
     const d = new Date();
     const daysToSubtract = period === 'WEEK' ? 7 : 30;
@@ -39,227 +42,224 @@ const ResellerDeepDive = ({ reseller, onBack }) => {
   if (!reseller) return null;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="resellers-container"
+      className="space-y-6"
     >
-      <button className="back-nav-btn" onClick={onBack}>
-        <FiArrowLeft /> Back to Reseller List
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-subtle hover:text-ink text-sm transition-colors"
+      >
+        <FiArrowLeft /> Back to reseller list
       </button>
 
-      <div className="d-flex justify-content-between align-items-end mb-4">
-        <div>
-          <h1 className="text-white mb-1">
-            {reseller.fullName} <span className="text-white-50 fs-4">@{reseller.username}</span>
-          </h1>
-          <div className="d-flex gap-3 align-items-center mt-2">
-            <Badge className={`badge-classic ${reseller.active ? 'badge-active' : 'badge-inactive'}`}>
-              {reseller.active ? 'ACTIVE PARTNER' : 'INACTIVE'}
-            </Badge>
-            <span className="text-white-50 small">
-              <FiCalendar className="me-1" /> Member since {new Date(reseller.createdAt).toLocaleDateString()}
-            </span>
-            <span className="text-white-50 small">
-              <FiMail className="me-1" /> {reseller.email || 'No email provided'}
-            </span>
+      <div>
+        <h1 className="font-display font-semibold text-xl text-ink">
+          {reseller.fullName} <span className="text-subtle font-normal text-base">@{reseller.username}</span>
+        </h1>
+        <div className="flex flex-wrap gap-4 items-center mt-2">
+          <Badge status={reseller.active ? 'active' : 'inactive'}>
+            {reseller.active ? 'Active partner' : 'Inactive'}
+          </Badge>
+          <span className="flex items-center gap-1.5 text-subtle text-sm">
+            <FiCalendar className="text-xs" /> Member since {new Date(reseller.createdAt).toLocaleDateString()}
+          </span>
+          <span className="flex items-center gap-1.5 text-subtle text-sm">
+            <FiMail className="text-xs" /> {reseller.email || 'No email provided'}
+          </span>
+        </div>
+      </div>
+
+      {/* KPI grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <Card>
+          <p className="text-subtle text-xs uppercase tracking-wide">Total users</p>
+          <p className="font-mono font-semibold text-2xl text-ink mt-1">
+            {isStatsLoading ? <Spinner size={18} /> : (stats?.totalUsers || reseller.totalUsers || 0)}
+          </p>
+          <p className="flex items-center gap-1 text-emerald-400 text-xs mt-1">
+            <FiTrendingUp className="text-[10px]" /> {stats?.growthPercentage ? `${stats.growthPercentage > 0 ? '+' : ''}${stats.growthPercentage}%` : '+0%'} this month
+          </p>
+        </Card>
+        <Card>
+          <p className="text-subtle text-xs uppercase tracking-wide">Active subscriptions</p>
+          <p className="font-mono font-semibold text-2xl text-ink mt-1">
+            {isStatsLoading ? <Spinner size={18} /> : (stats?.activeSubscriptions || 0)}
+          </p>
+          <p className="flex items-center gap-1 text-sky-400 text-xs mt-1">
+            <FiActivity className="text-[10px]" /> {stats?.totalUsers ? Math.round((stats.activeSubscriptions / stats.totalUsers) * 100) : 0}% retention
+          </p>
+        </Card>
+        <Card>
+          <p className="text-subtle text-xs uppercase tracking-wide">Remaining credits</p>
+          <p className="font-mono font-semibold text-2xl text-ink mt-1">
+            {isStatsLoading ? <Spinner size={18} /> : (stats?.remainingCredits !== undefined ? stats.remainingCredits.toLocaleString() : 0)}
+          </p>
+          <p className="flex items-center gap-1 text-amber-400 text-xs mt-1">
+            <FiCreditCard className="text-[10px]" /> Partner credits
+          </p>
+        </Card>
+        <Card>
+          <p className="text-subtle text-xs uppercase tracking-wide">Partner level</p>
+          <p className="font-mono font-semibold text-2xl text-maroon-light mt-1">
+            {isStatsLoading ? <Spinner size={18} /> : (stats?.partnerLevel || 'Standard')}
+          </p>
+          <p className="text-subtle text-xs mt-1">KPI performance</p>
+        </Card>
+      </div>
+
+      {/* Charts */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display font-semibold text-ink text-sm">Activation trends</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPeriod('WEEK')}
+                className={`text-xs font-medium rounded-lg px-3 py-1.5 border transition-colors ${
+                  period === 'WEEK' ? 'bg-maroon/15 text-maroon-light border-maroon/30' : 'text-subtle border-line hover:text-ink'
+                }`}
+              >
+                Weekly
+              </button>
+              <button
+                onClick={() => setPeriod('MONTH')}
+                className={`text-xs font-medium rounded-lg px-3 py-1.5 border transition-colors ${
+                  period === 'MONTH' ? 'bg-maroon/15 text-maroon-light border-maroon/30' : 'text-subtle border-line hover:text-ink'
+                }`}
+              >
+                Monthly
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* KPI Section */}
-      <div className="deep-dive-grid">
-        <div className="glass-card insight-card">
-          <div className="insight-label">Total Users</div>
-          <div className="insight-value">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.totalUsers || reseller.totalUsers || 0)}</div>
-          <div className="text-success small"><FiTrendingUp /> {stats?.growthPercentage ? `${stats.growthPercentage > 0 ? '+' : ''}${stats.growthPercentage}%` : '+0%'} this month</div>
-        </div>
-        <div className="glass-card insight-card">
-          <div className="insight-label">Active Subscriptions</div>
-          <div className="insight-value">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.activeSubscriptions || 0)}</div>
-          <div className="text-info small"><FiActivity /> {stats?.totalUsers ? Math.round((stats.activeSubscriptions / stats.totalUsers) * 100) : 0}% Retention</div>
-        </div>
-        <div className="glass-card insight-card">
-          <div className="insight-label">Remaining Credits</div>
-          <div className="insight-value">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.remainingCredits !== undefined ? `${stats.remainingCredits.toLocaleString()}` : 0)}</div>
-          <div className="text-warning small"><FiCreditCard /> Partner Credits</div>
-        </div>
-        <div className="glass-card insight-card">
-          <div className="insight-label">Partner Level</div>
-          <div className="insight-value text-info">{isStatsLoading ? <Spinner size="sm" animation="border" /> : (stats?.partnerLevel || 'Standard')}</div>
-          <div className="text-white-50 small">KPI Performance</div>
-        </div>
-      </div>
-
-      {/* Charts Section */}
-      <Row className="g-4">
-        <Col lg={8}>
-          <div className="glass-card chart-container h-100">
-            <div className="chart-header">
-              <h3 className="section-title m-0">Activation Trends</h3>
-              <div className="d-flex gap-2">
-                <Badge 
-                  bg={period === 'WEEK' ? 'dark' : 'transparent'} 
-                  className={`border border-secondary cursor-pointer ${period === 'WEEK' ? '' : 'text-white-50'}`}
-                  onClick={() => setPeriod('WEEK')}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Weekly
-                </Badge>
-                <Badge 
-                  bg={period === 'MONTH' ? 'dark' : 'transparent'} 
-                  className={`border border-secondary cursor-pointer ${period === 'MONTH' ? '' : 'text-white-50'}`}
-                  onClick={() => setPeriod('MONTH')}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Monthly
-                </Badge>
+          <div className="relative" style={{ width: '100%', height: 260 }}>
+            {isAnalyticsLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-surface/60 z-10">
+                <Spinner />
               </div>
-            </div>
-            <div style={{ width: '100%', height: 300 }} className="position-relative">
-              {isAnalyticsLoading && (
-                <div className="chart-overlay d-flex justify-content-center align-items-center">
-                  <Spinner animation="border" variant="danger" />
-                </div>
-              )}
-              <ResponsiveContainer>
-                <AreaChart data={formattedAnalytics}>
-                  <defs>
-                    <linearGradient id="colorActivations" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#E50914" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#E50914" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 10}}
-                    dy={10}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 12}}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(20,20,20,0.9)', 
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '8px',
-                      color: '#fff'
-                    }} 
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="activations" 
-                    stroke="#E50914" 
-                    strokeWidth={3}
-                    fillOpacity={1} 
-                    fill="url(#colorActivations)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            ) : null}
+            <ResponsiveContainer>
+              <AreaChart data={formattedAnalytics}>
+                <defs>
+                  <linearGradient id="colorActivations" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#C0334A" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#C0334A" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#9C9498', fontSize: 11 }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#9C9498', fontSize: 11 }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#141215',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: '8px',
+                    color: '#F1EDEE'
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="activations"
+                  stroke="#C0334A"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorActivations)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-        </Col>
-        <Col lg={4}>
-          <div className="glass-card h-100">
-             <h3 className="section-title mb-4">Quick Insights</h3>
-             <div className="mb-4">
-               <div className="d-flex justify-content-between mb-2">
-                 <span className="text-white-50 small">Target Progress</span>
-                 <span className="text-white small">75%</span>
-               </div>
-               <div className="progress" style={{ height: '6px', background: 'rgba(255,255,255,0.1)' }}>
-                 <div className="progress-bar bg-danger" style={{ width: '75%' }}></div>
-               </div>
-             </div>
-             <ul className="list-unstyled">
-               <li className="d-flex gap-3 mb-3">
-                 <div className="stat-icon-box bg-dark p-2 rounded text-danger"><FiUsers /></div>
-                 <div>
-                   <div className="text-white small fw-bold">Primary Growth</div>
-                   <div className="text-white-50 tiny">Mainly from sub-resellers</div>
-                 </div>
-               </li>
-               <li className="d-flex gap-3 mb-3">
-                 <div className="stat-icon-box bg-dark p-2 rounded text-info"><FiActivity /></div>
-                 <div>
-                   <div className="text-white small fw-bold">Peak Activity</div>
-                   <div className="text-white-50 tiny">{stats?.peakActivationTime || 'Not Available'}</div>
-                 </div>
-               </li>
-             </ul>
-          </div>
-        </Col>
-      </Row>
+        </Card>
 
-      {/* Sub-resellers Section */}
-      <div className="sub-reseller-section">
-        <h3 className="section-title mb-4">Sub-Reseller Hierarchy</h3>
-        <div className="glass-card p-0 overflow-hidden">
-          <div className="sub-reseller-table-row bg-white-10 fw-bold small text-white-50">
-            <div>RESELLER</div>
-            <div>STATUS</div>
-            <div>ACTIVE USERS</div>
+        <Card>
+          <h3 className="font-display font-semibold text-ink text-sm mb-4">Quick insights</h3>
+          <div className="mb-5">
+            <div className="flex justify-between mb-1.5">
+              <span className="text-subtle text-xs">Target progress</span>
+              <span className="text-ink text-xs font-medium">75%</span>
+            </div>
+            <div className="h-1.5 bg-surface2 rounded-full overflow-hidden">
+              <div className="h-full bg-maroon-light rounded-full" style={{ width: '75%' }} />
+            </div>
           </div>
-          
+          <ul className="space-y-3">
+            <li className="flex gap-3">
+              <div className="w-9 h-9 rounded-lg bg-maroon/15 text-maroon-light flex items-center justify-center shrink-0">
+                <FiUsers className="text-sm" />
+              </div>
+              <div>
+                <div className="text-ink text-sm font-medium">Primary growth</div>
+                <div className="text-subtle text-xs">Mainly from sub-resellers</div>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <div className="w-9 h-9 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0">
+                <FiActivity className="text-sm" />
+              </div>
+              <div>
+                <div className="text-ink text-sm font-medium">Peak activity</div>
+                <div className="text-subtle text-xs">{stats?.peakActivationTime || 'Not available'}</div>
+              </div>
+            </li>
+          </ul>
+        </Card>
+      </div>
+
+      {/* Sub-resellers */}
+      <div>
+        <h3 className="font-display font-semibold text-ink text-sm mb-3">Sub-reseller hierarchy</h3>
+        <Card noPadding>
+          <div className="grid grid-cols-3 gap-4 px-4 md:px-5 py-3 border-b border-line text-subtle text-xs font-medium uppercase tracking-wide">
+            <div>Reseller</div>
+            <div>Status</div>
+            <div>Active users</div>
+          </div>
+
           {isSubLoading ? (
-            <div className="p-4 text-center"><Spinner animation="border" variant="danger" /></div>
+            <div className="flex justify-center py-8"><Spinner size={18} /></div>
           ) : subResellersData?.content?.length > 0 ? (
             <>
               {subResellersData.content.map(sub => (
-                <div key={sub.id} className="sub-reseller-table-row text-white">
-                  <div className="d-flex align-items-center gap-2">
-                    <FiUser className="text-danger" />
-                    <div>
-                      <div className="fw-bold">{sub.username}</div>
-                      <div className="text-white-50 tiny">Joined {new Date(sub.joinedAt).toLocaleDateString()}</div>
+                <div key={sub.id} className="grid grid-cols-3 gap-4 items-center px-4 md:px-5 py-3.5 border-b border-line last:border-b-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FiUser className="text-maroon-light shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-ink text-sm font-medium truncate">{sub.username}</div>
+                      <div className="text-subtle text-xs">Joined {new Date(sub.joinedAt).toLocaleDateString()}</div>
                     </div>
                   </div>
                   <div>
-                    <Badge className={`badge-classic ${sub.status === 'ACTIVE' ? 'badge-active' : 'badge-inactive'}`}>
-                      {sub.status}
-                    </Badge>
+                    <Badge status={sub.status === 'ACTIVE' ? 'active' : 'inactive'}>{sub.status}</Badge>
                   </div>
-                  <div className="fw-bold">{sub.activeUsers}</div>
+                  <div className="text-ink text-sm font-medium">{sub.activeUsers}</div>
                 </div>
               ))}
 
-              {/* Pagination Spot */}
-              {subResellersData.totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center p-3 border-top border-secondary-subtle">
-                  <Button 
-                    variant="outline-info" 
-                    size="sm"
-                    className="px-4 fw-bold"
-                    disabled={subPage === 0}
-                    onClick={() => setSubPage(prev => Math.max(0, prev - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-white-50 small">
-                    Page <span className="text-white fw-bold">{subPage + 1}</span> of {subResellersData.totalPages}
-                  </span>
-                  <Button 
-                    variant="outline-info" 
-                    size="sm"
-                    className="px-4 fw-bold"
-                    disabled={subPage >= subResellersData.totalPages - 1}
-                    onClick={() => setSubPage(prev => prev + 1)}
-                  >
-                    Next
-                  </Button>
+              {subResellersData.totalPages > 1 ? (
+                <div className="px-4 md:px-5 py-4 border-t border-line">
+                  <Pagination
+                    currentPage={subPage}
+                    totalPages={subResellersData.totalPages}
+                    onPageChange={(p) => setSubPage(p)}
+                  />
                 </div>
-              )}
+              ) : null}
             </>
           ) : (
-            <div className="p-5 text-center text-white-50">No sub-resellers managed by this account.</div>
+            <div className="p-10 text-center text-subtle text-sm">No sub-resellers managed by this account.</div>
           )}
-        </div>
+        </Card>
       </div>
     </motion.div>
   );

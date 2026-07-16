@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
-import { Row, Col, Badge, Image, Spinner, Alert, Button, Table, Modal, Form } from 'react-bootstrap';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiTag, FiPlus, FiEdit2, FiPower, FiActivity, FiLogOut, FiPackage, FiMenu } from 'react-icons/fi';
+import React, { useState, useMemo } from 'react';
+import { FiTag, FiPlus, FiEdit2, FiPower, FiActivity, FiPackage } from 'react-icons/fi';
 import Sidebar from '../Shared/Sidebar';
 import { usePlans, useCreatePlan, useUpdatePlan, useTogglePlanStatus } from '../../hooks/usePlans';
 import { useAuthContext } from '../../contexts/AuthContext';
-import ColumnFilter from '../Shared/ColumnFilter';
-import Pagination from '../Shared/Pagination';
-import ConfirmModal from '../Shared/ConfirmModal';
-import '../Dashboard/Dashboard.css';
+import ColumnFilter from '../common/ColumnFilter';
+import Pagination from '../common/Pagination';
+import ConfirmModal from '../common/ConfirmModal';
+import Card from '../common/Card';
+import Badge from '../common/Badge';
+import Button from '../common/Button';
+import IconButton from '../common/IconButton';
+import Spinner from '../common/Spinner';
+import ErrorAlert from '../common/ErrorAlert';
+import Modal from '../common/Modal';
+import Input from '../common/Input';
+import Textarea from '../common/Textarea';
+import HamburgerIcon from '../common/HamburgerIcon';
+import ProfileMenu from '../common/ProfileMenu';
 
 const Plans = () => {
-  const { user, logout } = useAuthContext();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user } = useAuthContext();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [page, setPage] = useState(0);
   const size = 20;
@@ -20,17 +27,17 @@ const Plans = () => {
 
   const { data: plansData, isLoading, error } = usePlans(page, size);
 
-  const filteredPlans = React.useMemo(() => {
+  const filteredPlans = useMemo(() => {
     if (!plansData?.content) return [];
-    return plansData.content.filter(plan => 
+    return plansData.content.filter(plan =>
       !planFilter || plan.name?.toLowerCase().includes(planFilter.toLowerCase())
     );
   }, [plansData, planFilter]);
+
   const createMutation = useCreatePlan();
   const updateMutation = useUpdatePlan();
   const toggleStatusMutation = useTogglePlanStatus();
 
-  // Modal State
   const [showModal, setShowModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
   const [formData, setFormData] = useState({
@@ -102,258 +109,196 @@ const Plans = () => {
     }
   };
 
+  const gridCols = 'grid-cols-[70px_minmax(180px,2fr)_100px_110px_100px_110px_120px]';
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
   return (
-    <div className="dashboard-container">
-      <Sidebar 
-        activePage="plans" 
-        isMobileOpen={isMobileOpen} 
-        onMobileClose={() => setIsMobileOpen(false)} 
+    <div className="flex min-h-screen bg-base">
+      <Sidebar
+        activePage="plans"
+        isMobileOpen={isMobileOpen}
+        onMobileClose={() => setIsMobileOpen(false)}
       />
-      <div className="content-area">
-        <header className="dash-header">
-          <div className="header-left-group">
-            <button 
-              className="mobile-toggle-btn" 
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="h-16 md:h-20 shrink-0 flex items-center justify-between gap-4 px-4 md:px-6 border-b border-line">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
               onClick={() => setIsMobileOpen(true)}
+              className="md:hidden text-subtle w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface2 shrink-0"
+              aria-label="Open menu"
             >
-              <FiMenu />
+              <HamburgerIcon />
             </button>
-            <div className="welcome-text">
-              <h1>Subscription <span className="highlight">Plans</span></h1>
-              <p>Define and manage your service offerings</p>
+            <div className="min-w-0">
+              <h1 className="font-display font-semibold text-lg md:text-xl text-ink truncate">
+                Subscription <span className="text-maroon-light">Plans</span>
+              </h1>
+              <p className="hidden sm:block text-subtle text-sm mt-0.5">Define and manage your service offerings</p>
             </div>
           </div>
-          <div className="profile-section">
-            <div className="notif-bell"><FiActivity /></div>
-            
-            <div className="profile-dropdown-container">
-              <div 
-                className={`profile-avatar-trigger ${showProfileMenu ? 'active' : ''}`}
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-              >
-                <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.fullName || 'Admin'}&background=E50914&color=fff`} 
-                  roundedCircle 
-                  className="admin-avatar m-0" 
-                />
-              </div>
 
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="profile-menu"
-                  >
-                    <div className="px-3 py-2">
-                       <div className="fw-bold text-white">{user?.fullName}</div>
-                       <div className="small text-white">{user?.role}</div>
-                    </div>
-                    <div className="profile-menu-divider"></div>
-                    <div className="profile-menu-item logout" onClick={logout}>
-                      <FiLogOut /> Logout
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button className="relative w-9 h-9 hidden sm:flex items-center justify-center rounded-lg hover:bg-surface2 text-subtle">
+              <FiActivity />
+            </button>
+            <ProfileMenu user={user} />
           </div>
         </header>
 
-        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
-           <div className="d-flex align-items-center">
-              <FiPackage className="text-info me-2 fs-3" />
-              <h3 className="section-title m-0">Available Plans</h3>
-           </div>
-           <Button 
-            variant="danger" 
-            className="d-flex align-items-center gap-2 fw-bold px-4"
-            style={{ borderRadius: '12px' }}
-            onClick={() => handleOpenModal()}
-           >
-             <FiPlus /> Create New Plan
-           </Button>
-        </div>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
 
-        <div className="recent-section">
-          {isLoading ? (
-            <div className="text-center py-5"><Spinner animation="border" variant="danger" /></div>
-          ) : error ? (
-            <Alert variant="danger">Error loading plans: {error.message}</Alert>
-          ) : (
-            <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-              <div className="table-header-row plan-table-grid">
-                <div className="th-cell align-left">ID</div>
-                <div className="th-cell align-left">
-                  PLAN NAME
-                  <ColumnFilter column="plan" onFilterChange={(_, val) => setPlanFilter(val)} placeholder="Plan Name" />
-                </div>
-                <div className="th-cell align-right">DURATION</div>
-                <div className="th-cell align-right">PRICE</div>
-                <div className="th-cell align-right">CREDITS</div>
-                <div className="th-cell align-center">STATUS</div>
-                <div className="th-cell align-center">ACTIONS</div>
-              </div>
-
-              {filteredPlans.map((plan, index) => (
-                <motion.div 
-                  key={plan.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="table-data-row align-items-center plan-table-grid"
-                >
-                  <div className="td-cell align-left text-white-50">#{plan.id}</div>
-                  <div className="td-cell align-left fw-bold text-white px-2 wrap-text">
-                    <FiTag className="text-danger me-2" />
-                    {plan.name}
-                  </div>
-                  <div className="td-cell align-right text-white-50">{plan.durationDays} Days</div>
-                  <div className="td-cell align-right">
-                    <span className="text-info fw-bold">{plan.price}</span> {plan.currency}
-                  </div>
-                  <div className="td-cell align-right">
-                    <span className="text-warning fw-bold">{plan.credits}</span>
-                  </div>
-                  <div className="td-cell align-center">
-                    <Badge bg={plan.active ? "success" : "secondary"} className="status-pill">
-                      {plan.active ? "ACTIVE" : "INACTIVE"}
-                    </Badge>
-                  </div>
-                  <div className="td-cell align-center">
-                    <Button variant="outline-info" size="sm" className="me-2" onClick={() => handleOpenModal(plan)} title="Edit">
-                      <FiEdit2 />
-                    </Button>
-                    <Button 
-                      variant={plan.active ? "outline-danger" : "outline-success"} 
-                      size="sm"
-                      onClick={() => handleToggleStatus(plan)}
-                      disabled={toggleStatusMutation.isPending}
-                      title={plan.active ? "Disable" : "Enable"}
-                    >
-                      <FiPower />
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-              
-              {filteredPlans.length === 0 && (
-                <div className="p-5 text-center text-white-50">No matching plans found.</div>
-              )}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FiPackage className="text-maroon-light text-lg" />
+              <h2 className="font-display font-semibold text-lg text-ink">Available plans</h2>
             </div>
-          )}
+            <Button variant="primary" onClick={() => handleOpenModal()} className="gap-2">
+              <FiPlus /> Create new plan
+            </Button>
+          </div>
 
-          <Pagination 
-            currentPage={page} 
-            totalPages={plansData?.totalPages || 0} 
-            onPageChange={setPage} 
-          />
-        </div>
+          <Card noPadding>
+            {isLoading ? (
+              <div className="flex justify-center py-10"><Spinner /></div>
+            ) : error ? (
+              <div className="p-4"><ErrorAlert>Error loading plans: {error.message}</ErrorAlert></div>
+            ) : (
+              <div className="overflow-x-auto">
+                <div className={`grid ${gridCols} gap-3 px-4 md:px-5 py-3 min-w-[900px] border-b border-line`}>
+                  <div className="text-subtle text-xs font-medium uppercase tracking-wide">Id</div>
+                  <div className="flex items-center gap-1 text-subtle text-xs font-medium uppercase tracking-wide">
+                    Plan name <ColumnFilter column="plan" onFilterChange={(_, val) => setPlanFilter(val)} placeholder="Plan name" />
+                  </div>
+                  <div className="text-subtle text-xs font-medium uppercase tracking-wide text-right">Duration</div>
+                  <div className="text-subtle text-xs font-medium uppercase tracking-wide text-right">Price</div>
+                  <div className="text-subtle text-xs font-medium uppercase tracking-wide text-right">Credits</div>
+                  <div className="text-subtle text-xs font-medium uppercase tracking-wide text-center">Status</div>
+                  <div className="text-subtle text-xs font-medium uppercase tracking-wide text-center">Actions</div>
+                </div>
+
+                {filteredPlans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className={`grid ${gridCols} gap-3 items-center px-4 md:px-5 py-3.5 min-w-[900px] border-b border-line last:border-b-0 hover:bg-surface2/60 transition-colors`}
+                  >
+                    <div className="font-mono text-subtle text-xs">#{plan.id}</div>
+                    <div className="flex items-center gap-2 font-medium text-ink text-sm truncate">
+                      <FiTag className="text-maroon-light shrink-0" /> {plan.name}
+                    </div>
+                    <div className="text-subtle text-sm text-right">{plan.durationDays} days</div>
+                    <div className="text-sm text-right">
+                      <span className="text-sky-400 font-medium">{plan.price}</span> <span className="text-subtle">{plan.currency}</span>
+                    </div>
+                    <div className="text-sm text-right">
+                      <span className="text-amber-400 font-medium">{plan.credits}</span>
+                    </div>
+                    <div className="flex justify-center">
+                      <Badge status={plan.active ? 'active' : 'inactive'}>{plan.active ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <IconButton icon={<FiEdit2 />} title="Edit" onClick={() => handleOpenModal(plan)} />
+                      <IconButton
+                        icon={<FiPower />}
+                        variant={plan.active ? 'danger' : 'success'}
+                        disabled={toggleStatusMutation.isPending}
+                        onClick={() => handleToggleStatus(plan)}
+                        title={plan.active ? 'Disable' : 'Enable'}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                {filteredPlans.length === 0 ? (
+                  <div className="p-10 text-center text-subtle text-sm">No matching plans found.</div>
+                ) : null}
+              </div>
+            )}
+
+            <div className="px-4 md:px-5 py-4 border-t border-line">
+              <Pagination
+                currentPage={page}
+                totalPages={plansData?.totalPages || 0}
+                onPageChange={setPage}
+              />
+            </div>
+          </Card>
+        </main>
       </div>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="dark-modal">
-        <Modal.Header closeButton className="bg-dark text-white border-secondary">
-          <Modal.Title>{editingPlan ? 'Edit Plan' : 'Create New Plan'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="bg-dark text-white p-4">
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label className="text-white-50 small">Plan Name</Form.Label>
-              <Form.Control 
-                type="text" 
-                required 
-                value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
-                placeholder="e.g. Annual Subscription"
-                className="bg-secondary text-white border-0"
-              />
-            </Form.Group>
+      <Modal show={showModal} onHide={() => setShowModal(false)} title={editingPlan ? 'Edit plan' : 'Create new plan'}>
+        <form onSubmit={handleSubmit}>
+          <Input
+            label="Plan name"
+            type="text"
+            required
+            value={formData.name}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
+            placeholder="e.g. Annual subscription"
+          />
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">Duration (Days)</Form.Label>
-                  <Form.Control 
-                    type="number" 
-                    required 
-                    value={formData.durationDays}
-                    onChange={e => setFormData({...formData, durationDays: e.target.value})}
-                    placeholder="e.g. 365"
-                    className="bg-secondary text-white border-0"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="text-white-50 small">Price</Form.Label>
-                  <div className="d-flex gap-2">
-                    <Form.Control 
-                      type="number" 
-                      step="0.01"
-                      required 
-                      value={formData.price}
-                      onChange={e => setFormData({...formData, price: e.target.value})}
-                      placeholder="59.99"
-                      className="bg-secondary text-white border-0"
-                    />
-                    <Form.Select 
-                      value={formData.currency}
-                      onChange={e => setFormData({...formData, currency: e.target.value})}
-                      className="bg-secondary text-white border-0"
-                      style={{ width: '100px' }}
-                    >
-                      <option value="EUR">EUR</option>
-                      <option value="USD">USD</option>
-                      <option value="GBP">GBP</option>
-                    </Form.Select>
-                  </div>
-                </Form.Group>
-              </Col>
-            </Row>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Duration (days)"
+              type="number"
+              required
+              value={formData.durationDays}
+              onChange={e => setFormData({ ...formData, durationDays: e.target.value })}
+              placeholder="e.g. 365"
+            />
+            <div className="mb-4">
+              <label className="block text-subtle text-xs font-medium mb-1.5">Price</label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={formData.price}
+                  onChange={e => setFormData({ ...formData, price: e.target.value })}
+                  placeholder="59.99"
+                  className="flex-1 min-w-0 bg-surface2 border border-line rounded-lg px-3 h-10 text-sm text-ink outline-none focus:border-maroon-light transition-colors placeholder:text-subtle"
+                />
+                <select
+                  value={formData.currency}
+                  onChange={e => setFormData({ ...formData, currency: e.target.value })}
+                  className="bg-surface2 border border-line rounded-lg px-2 h-10 text-sm text-ink outline-none focus:border-maroon-light transition-colors w-24 [&>option]:bg-surface"
+                >
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
-            <Form.Group className="mb-3">
-              <Form.Label className="text-white-50 small">Credit Cost (for Resellers)</Form.Label>
-              <Form.Control 
-                type="number" 
-                step="0.01"
-                required 
-                value={formData.credits}
-                onChange={e => setFormData({...formData, credits: e.target.value})}
-                placeholder="e.g. 30.00"
-                className="bg-secondary text-white border-0"
-              />
-            </Form.Group>
+          <Input
+            label="Credit cost (for resellers)"
+            type="number"
+            step="0.01"
+            required
+            value={formData.credits}
+            onChange={e => setFormData({ ...formData, credits: e.target.value })}
+            placeholder="e.g. 30.00"
+          />
 
-            <Form.Group className="mb-4">
-              <Form.Label className="text-white-50 small">Description</Form.Label>
-              <Form.Control 
-                as="textarea" 
-                rows={3} 
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                placeholder="Briefly describe what this plan offers..."
-                className="bg-secondary text-white border-0"
-              />
-            </Form.Group>
+          <Textarea
+            label="Description"
+            rows={3}
+            value={formData.description}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Briefly describe what this plan offers..."
+          />
 
-            <Button 
-              variant="danger" 
-              type="submit" 
-              className="w-100 py-2 fw-bold fs-5"
-              disabled={createMutation.isPending || updateMutation.isPending}
-            >
-              {createMutation.isPending || updateMutation.isPending ? <Spinner animation="border" size="sm" /> : editingPlan ? 'Update Plan' : 'Create Plan'}
-            </Button>
-          </Form>
-        </Modal.Body>
+          <Button type="submit" variant="primary" className="w-full justify-center mt-2" disabled={isSaving}>
+            {isSaving ? 'Saving...' : editingPlan ? 'Update plan' : 'Create plan'}
+          </Button>
+        </form>
       </Modal>
 
-      <ConfirmModal 
+      <ConfirmModal
         show={confirmState.show}
         onHide={() => setConfirmState({ show: false, plan: null })}
         onConfirm={executeToggleStatus}
-        title={confirmState.plan?.active ? 'Deactivate Plan?' : 'Activate Plan?'}
+        title={confirmState.plan?.active ? 'Deactivate plan?' : 'Activate plan?'}
         message={`Are you sure you want to ${confirmState.plan?.active ? 'deactivate' : 'activate'} this subscription plan? Existing subscriptions will remain valid until expiry.`}
         confirmText={confirmState.plan?.active ? 'Deactivate' : 'Activate'}
         variant={confirmState.plan?.active ? 'danger' : 'info'}

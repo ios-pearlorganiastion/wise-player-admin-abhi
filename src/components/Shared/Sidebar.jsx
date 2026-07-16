@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiUsers, FiDollarSign, FiLayers,FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock, FiLogOut } from 'react-icons/fi';
+import { FiPlay, FiUsers, FiDollarSign, FiLayers, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock, FiLogOut, FiX } from 'react-icons/fi';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSupportTicketsCount } from '../../hooks/useSupportTickets';
-import './ColumnFilter.css'; // Reusing some shared styles or we can create Sidebar.css
+import NavItem from '../common/NavItem';
+import Button from '../common/Button';
+import WisePlayerLogo from '../WisePlayerLogo/WisePlayerLogo';
 
 const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
   const navigate = useNavigate();
@@ -12,32 +14,20 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
   const { data: stats } = useDashboardStats();
   const { data: openTicketsCount } = useSupportTicketsCount('OPEN');
 
-  React.useEffect(() => {
-    if (stats) {
-      console.log('--- Sidebar Debug ---');
-      console.log('Stats Keys:', Object.keys(stats));
-      console.log('Full Stats Object:', stats);
-      console.log('Pending Activations (plural):', stats.pendingActivations);
-      console.log('Pending Activation (singular):', stats.pendingActivation);
-    }
-  }, [stats]);
-
   const navItems = [
     { id: 'dashboard', icon: <FiPlay />, path: '/dashboard', label: 'Dashboard' },
     { id: 'devices', icon: <FiUsers />, path: '/devices', label: 'Devices' },
     { id: 'payments', icon: <FiDollarSign />, path: '/payments', label: 'Payments' },
     { id: 'subscriptions', icon: <FiTrendingUp />, path: '/subscriptions', label: 'Subscriptions' },
     { id: 'activation-requests', icon: <FiCheckSquare />, path: '/activation-requests', label: 'Activation', showBadge: true, badgeKey: 'pendingActivations' },
-    { id: 'reports', icon: <FiBarChart2 />, path: '/reports', label: 'Reports' },
-    { id: 'users', icon: <FiUserCheck />, path: '/users', label: 'Users' },
     { id: 'support-tickets', icon: <FiLifeBuoy />, path: '/support-tickets', label: 'Support', showBadge: true, badgeKey: 'openSupportTickets' },
-    { id: 'change-password', icon: <FiLock />, path: '/change-password', label: 'Change Password' },
     { id: 'pricing-tiers', icon: <FiLayers />, path: '/pricing-tiers', label: 'Pricing Tiers' },
+    { id: 'plans', icon: <FiTag />, path: '/plans', label: 'Plans' },
+    { id: 'resellers', icon: <FiUserPlus />, path: '/resellers', label: 'Resellers' },
+    { id: 'reports', icon: <FiBarChart2 />, path: '/reports', label: 'Reports' },
   ];
 
   const superAdminItems = [
-    { id: 'plans', icon: <FiTag />, path: '/plans', label: 'Plans' },
-    { id: 'resellers', icon: <FiUserPlus />, path: '/resellers', label: 'Resellers' },
     { id: 'admin-management', icon: <FiSettings />, path: '/admin-management', label: 'Admins' },
   ];
 
@@ -46,66 +36,123 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
     if (onMobileClose) onMobileClose();
   };
 
+  const getBadgeValue = (item) => {
+    if (!item.showBadge) return 0;
+    return item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats?.[item.badgeKey];
+  };
+
+  const renderNavList = () => (
+    <>
+      {navItems.map((item) => (
+        <NavItem
+          key={item.id}
+          icon={item.icon}
+          label={item.label}
+          active={activePage === item.id}
+          badge={getBadgeValue(item)}
+          onClick={() => handleNavClick(item.path)}
+        />
+      ))}
+      {user?.role === 'SUPER_ADMIN' && (
+        <>
+          <div className="h-px bg-line my-2 mx-3" />
+          {superAdminItems.map((item) => (
+            <NavItem
+              key={item.id}
+              icon={item.icon}
+              label={item.label}
+              active={activePage === item.id}
+              onClick={() => handleNavClick(item.path)}
+            />
+          ))}
+        </>
+      )}
+    </>
+  );
+
   return (
     <>
-      <div 
-        className={`sidebar-overlay ${isMobileOpen ? 'visible' : ''}`} 
-        onClick={onMobileClose}
-      />
-      <div className={`glass-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
-        <div className="logo-box">
-          <span className="logo-text">WP</span>
-          <div className="logo-visualizer">
-            <span className="v-bar"></span>
-            <span className="v-bar"></span>
-            <span className="v-bar"></span>
-            <span className="v-bar"></span>
-          </div>
+      {/* Desktop / tablet sidebar */}
+      <aside className="hidden md:flex md:w-20 lg:w-64 shrink-0 bg-surface border-r border-line flex-col h-screen sticky top-0">
+        <div className="h-16 flex items-center gap-2.5 px-4 lg:px-5 border-b border-line shrink-0 justify-center lg:justify-start">
+          <WisePlayerLogo size={30} bg="#141215" />
+           <span className="hidden lg:inline font-display font-semibold text-[20px] tracking-wide">
+  <span className="text-ink">WISE</span> <span className="text-maroon-light">PLAYER</span>
+ </span>
         </div>
-        <nav className="nav-links">
-          {navItems.map((item) => (
-            <div 
-              key={item.id}
-              className={`nav-item ${activePage === item.id ? 'active' : ''}`}
-              onClick={() => handleNavClick(item.path)}
-              title={item.label}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-              {item.showBadge && (
-                (item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats?.[item.badgeKey]) > 0
-              ) && (
-                <span className="nav-badge animate-pulse">
-                  {item.badgeKey === 'openSupportTickets' ? openTicketsCount : stats?.[item.badgeKey]}
-                </span>
-              )}
-            </div>
-          ))}
-          
-          <div className="sidebar-divider"></div>
-
-          {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') && superAdminItems.map((item) => (
-            <div 
-              key={item.id}
-              className={`nav-item ${activePage === item.id ? 'active' : ''}`}
-              onClick={() => handleNavClick(item.path)}
-              title={item.label}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-            </div>
-          ))}
-          <div className="sidebar-divider"></div>
-          
-          <div 
-            className="nav-item logout-nav-item"
-            onClick={logout}
-            title="Logout"
-          >
-            <span className="nav-icon"><FiLogOut /></span>
-            <span className="nav-label">Logout</span>
+        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+          <div className="hidden lg:block">{renderNavList()}</div>
+          {/* Tablet: icon-only rail */}
+          <div className="lg:hidden flex flex-col items-center gap-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                title={item.label}
+                onClick={() => handleNavClick(item.path)}
+                className={`relative w-11 h-11 flex items-center justify-center rounded-lg transition-colors ${
+                  activePage === item.id ? 'bg-surface2 text-maroon-light' : 'text-subtle hover:bg-surface2 hover:text-ink'
+                }`}
+              >
+                {item.icon}
+                {getBadgeValue(item) > 0 && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-maroon-light" />
+                )}
+              </button>
+            ))}
+            {user?.role === 'SUPER_ADMIN' && (
+              <>
+                <div className="h-px w-8 bg-line my-1.5" />
+                {superAdminItems.map((item) => (
+                  <button
+                    key={item.id}
+                    title={item.label}
+                    onClick={() => handleNavClick(item.path)}
+                    className={`w-11 h-11 flex items-center justify-center rounded-lg transition-colors ${
+                      activePage === item.id ? 'bg-surface2 text-maroon-light' : 'text-subtle hover:bg-surface2 hover:text-ink'
+                    }`}
+                  >
+                    {item.icon}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </nav>
+        <div className="p-2 border-t border-line shrink-0">
+          <Button
+            variant="ghost"
+            onClick={logout}
+            title="Logout"
+            className="w-full lg:justify-start justify-center gap-3"
+          >
+            <FiLogOut />
+            <span className="hidden lg:inline">Logout</span>
+          </Button>
+        </div>
+      </aside>
+
+      {/* Mobile sidebar */}
+      <div className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/60" onClick={onMobileClose} />
+        <aside className={`relative w-72 max-w-[85vw] h-full bg-surface border-r border-line flex flex-col transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="h-16 flex items-center justify-between px-5 border-b border-line shrink-0">
+            <div className="flex items-center gap-2.5">
+              <WisePlayerLogo size={28} bg="#141215" />
+               <span className="font-display font-semibold text-[15px] tracking-wide">
+   <span className="text-ink">WISE</span> <span className="text-maroon-light">PLAYER</span>
+ </span>
+            </div>
+            <button onClick={onMobileClose} className="text-subtle w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface2" aria-label="Close menu">
+              <FiX />
+            </button>
+          </div>
+          <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">{renderNavList()}</nav>
+          <div className="p-2 border-t border-line shrink-0">
+            <Button variant="ghost" onClick={logout} className="w-full justify-start gap-3">
+              <FiLogOut /> Logout
+            </Button>
+          </div>
+        </aside>
       </div>
     </>
   );

@@ -1,100 +1,96 @@
 import React from 'react';
-import { Badge, Spinner, Button } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { FiEye, FiClock, FiCheckCircle, FiXCircle, FiInfo } from 'react-icons/fi';
+import Badge from '../common/Badge';
+import Spinner from '../common/Spinner';
+import ErrorAlert from '../common/ErrorAlert';
 
 const TicketTable = ({ tickets, isLoading, error, onViewDetails }) => {
   if (isLoading) {
     return (
-      <div className="text-center my-5 py-5">
-        <Spinner animation="border" variant="info" />
-        <p className="mt-3 text-muted">Fetching support tickets...</p>
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <Spinner />
+        <p className="text-subtle text-sm">Fetching support tickets...</p>
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="alert alert-danger m-4">
-        <FiXCircle className="me-2" />
-        Error loading tickets: {error.message}
-      </div>
-    );
+    return <div className="m-4"><ErrorAlert>Error loading tickets: {error.message}</ErrorAlert></div>;
   }
 
   if (!tickets || tickets.length === 0) {
     return (
-      <div className="empty-state-container">
-        <div className="empty-icon"><FiInfo /></div>
-        <h3>No Tickets Found</h3>
-        <p>There are no support tickets matching your current filter.</p>
+      <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
+        <FiInfo className="text-subtle text-2xl" />
+        <h3 className="font-display font-semibold text-ink text-base">No tickets found</h3>
+        <p className="text-subtle text-sm">There are no support tickets matching your current filter.</p>
       </div>
     );
   }
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'OPEN': return <FiClock className="me-1" />;
-      case 'IN_PROGRESS': return <FiClock className="me-1" />;
-      case 'RESOLVED': return <FiCheckCircle className="me-1" />;
-      case 'CLOSED': return <FiXCircle className="me-1" />;
-      default: return null;
+      case 'OPEN':
+      case 'IN_PROGRESS':
+        return <FiClock className="text-[11px]" />;
+      case 'RESOLVED':
+        return <FiCheckCircle className="text-[11px]" />;
+      case 'CLOSED':
+        return <FiXCircle className="text-[11px]" />;
+      default:
+        return null;
     }
   };
 
-  return (
-    <div className="custom-table-wrapper" style={{ overflowX: 'auto' }}>
-      <div className="table-header-row support-table-grid">
-        <div className="th-cell align-left">NAME</div>
-        <div className="th-cell align-left">EMAIL</div>
-        <div className="th-cell align-left">INQUIRY TYPE</div>
-        <div className="th-cell align-left">MAC ADDRESS</div>
-        <div className="th-cell align-center">STATUS</div>
-        <div className="th-cell align-left">CREATED</div>
-        <div className="th-cell align-center">ACTION</div>
-      </div>
+  const gridCols = 'grid-cols-[minmax(140px,1.5fr)_minmax(180px,2fr)_130px_150px_130px_110px_90px]';
 
-      {tickets.map((ticket, index) => (
-        <motion.div 
-          key={ticket.id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.05 }}
-          className="table-data-row align-items-center support-table-grid"
-        >
-          <div className="td-cell align-left fw-bold text-white px-2">
-            {ticket.firstName} {ticket.lastName}
-          </div>
-          <div className="td-cell align-left text-white-50 tiny-text" title={ticket.email}>
-            {ticket.email}
-          </div>
-          <div className="td-cell align-left">
-            <span className="text-info">{ticket.inquiryType}</span>
-          </div>
-          <div className="td-cell align-left font-monospace small">
-            {ticket.macAddress}
-          </div>
-          <div className="td-cell align-center">
-            <Badge className={`status-pill ${ticket.status.toLowerCase()}`}>
-              {getStatusIcon(ticket.status)}
-              {ticket.status.replace('_', ' ')}
-            </Badge>
-          </div>
-          <div className="td-cell align-left small">
-            {new Date(ticket.createdAt).toLocaleDateString()}
-          </div>
-          <div className="td-cell align-center">
-            <Button 
-              variant="outline-info" 
-              size="sm" 
-              className="action-btn-neon"
-              onClick={() => onViewDetails(ticket)}
-            >
-              <FiEye className="me-1" /> View
-            </Button>
-          </div>
-        </motion.div>
-      ))}
+  return (
+    <div className="bg-surface border border-line rounded-xl overflow-hidden">
+      <div className="overflow-x-auto">
+        <div className={`grid ${gridCols} gap-3 px-4 md:px-5 py-3 min-w-[900px] border-b border-line`}>
+          <div className="text-subtle text-xs font-medium uppercase tracking-wide">Name</div>
+          <div className="text-subtle text-xs font-medium uppercase tracking-wide">Email</div>
+          <div className="text-subtle text-xs font-medium uppercase tracking-wide">Inquiry type</div>
+          <div className="text-subtle text-xs font-medium uppercase tracking-wide">Mac address</div>
+          <div className="text-subtle text-xs font-medium uppercase tracking-wide text-center">Status</div>
+          <div className="text-subtle text-xs font-medium uppercase tracking-wide">Created</div>
+          <div className="text-subtle text-xs font-medium uppercase tracking-wide text-center">Action</div>
+        </div>
+
+        {tickets.map((ticket, index) => (
+          <motion.div
+            key={ticket.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: Math.min(index * 0.03, 0.3) }}
+            className={`grid ${gridCols} gap-3 items-center px-4 md:px-5 py-3.5 min-w-[900px] border-b border-line last:border-b-0 hover:bg-surface2/60 transition-colors`}
+          >
+            <div className="font-medium text-ink text-sm truncate">
+              {ticket.firstName} {ticket.lastName}
+            </div>
+            <div className="text-subtle text-sm truncate" title={ticket.email}>
+              {ticket.email}
+            </div>
+            <div className="text-maroon-light text-sm truncate">{ticket.inquiryType}</div>
+            <div className="font-mono text-subtle text-xs truncate">{ticket.macAddress}</div>
+            <div className="flex justify-center">
+              <Badge status={ticket.status}>
+                <span className="flex items-center gap-1">{getStatusIcon(ticket.status)}{ticket.status.replace('_', ' ')}</span>
+              </Badge>
+            </div>
+            <div className="text-subtle text-sm">{new Date(ticket.createdAt).toLocaleDateString()}</div>
+            <div className="flex justify-center">
+              <button
+                onClick={() => onViewDetails(ticket)}
+                className="flex items-center gap-1.5 text-xs font-medium text-ink border border-line hover:border-maroon-light hover:text-maroon-light rounded-lg px-3 py-1.5 transition-colors"
+              >
+                <FiEye className="text-[11px]" /> View
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 };

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Container, Card, Form, Button, Alert, Row, Col } from 'react-bootstrap';
-import { motion } from 'framer-motion';
-import { FiMail, FiArrowLeft, FiSend } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { FiMail, FiArrowLeft, FiSend } from 'react-icons/fi';
 import { useInviteAdmin } from '../../hooks/useAuth';
-import './Auth.css';
+import AuthShell from '../common/AuthShell';
+import Input from '../common/Input';
+import Button from '../common/Button';
+import ErrorAlert from '../common/ErrorAlert';
 
 const AdminManagement = () => {
   const navigate = useNavigate();
@@ -24,10 +25,7 @@ const AdminManagement = () => {
         onSuccess: () => {
           setSuccess("Invitation sent! Redirecting...");
           setEmail('');
-          // Redirect back to dashboard after 2 seconds
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 2000);
+          setTimeout(() => navigate('/dashboard'), 2000);
         },
         onError: (err) => {
           setError(err.message || "Failed to send invitation.");
@@ -37,55 +35,40 @@ const AdminManagement = () => {
   };
 
   return (
-    <div className="auth-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-100"
-        style={{ maxWidth: '500px' }}
+    <AuthShell maxWidth={480}>
+      <button
+        onClick={() => navigate('/dashboard')}
+        className="flex items-center gap-2 text-maroon-light hover:text-maroon text-sm mb-4 transition-colors"
       >
-        <Card className="auth-card p-4">
-          <div className="card-content">
-            <div className="mb-4">
-              <Button variant="link" onClick={() => navigate('/dashboard')} className="text-info p-0 mb-3 d-flex align-items-center">
-                <FiArrowLeft className="me-2" /> Back to Dashboard
-              </Button>
-              <h2 className="login-title text-start">Invite New Admin</h2>
-              <p className="text-white">Enter the email of the person you want to invite as an administrator.</p>
-            </div>
+        <FiArrowLeft /> Back to dashboard
+      </button>
 
-            {error && <Alert variant="danger" className="custom-alert">{error}</Alert>}
-            {success && <Alert variant="success" className="custom-alert-success text-break">{success}</Alert>}
+      <h2 className="font-display font-semibold text-ink text-lg mb-2">Invite new admin</h2>
+      <p className="text-subtle text-sm mb-5">Enter the email of the person you want to invite as an administrator.</p>
 
-            <Form onSubmit={handleInvite}>
-              <Form.Group className="mb-4 custom-input-group">
-                <Form.Label className="text-light small mb-2">Email Address</Form.Label>
-                <div className="input-group">
-                  <span className="input-group-text"><FiMail /></span>
-                  <Form.Control
-                    type="email"
-                    placeholder="admin@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </Form.Group>
+      {error ? <div className="mb-4"><ErrorAlert>{error}</ErrorAlert></div> : null}
+      {success ? <div className="mb-4"><ErrorAlert variant="success">{success}</ErrorAlert></div> : null}
 
-
-              <Button 
-                type="submit" 
-                className={`w-100 login-btn ${success ? 'success-btn' : ''}`} 
-                disabled={inviteMutation.isPending || !!success}
-              >
-                {inviteMutation.isPending ? "SENDING..." : success ? "SENT" : "SEND INVITATION"} 
-                <FiSend className="ms-2" />
-              </Button>
-            </Form>
-          </div>
-        </Card>
-      </motion.div>
-    </div>
+      <form onSubmit={handleInvite}>
+        <Input
+          label="Email address"
+          icon={<FiMail />}
+          type="email"
+          placeholder="admin@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full justify-center gap-2"
+          disabled={inviteMutation.isPending || !!success}
+        >
+          {inviteMutation.isPending ? "Sending..." : success ? "Sent" : "Send invitation"} <FiSend />
+        </Button>
+      </form>
+    </AuthShell>
   );
 };
 
