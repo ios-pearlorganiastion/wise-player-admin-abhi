@@ -15,6 +15,7 @@ import SupportTickets from './components/SupportTickets/SupportTickets';
 import ForgotPassword from './components/Auth/ForgotPassword';
 import ResetPassword from './components/Auth/ResetPassword'
 import PricingTiers from './components/PricingTiers/PricingTiers';
+import Playlists from './components/Playlists/Playlists';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
               <Route path="/activation-requests" element={<ActivationRequests />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/plans" element={<Plans />} />
+              <Route path="/playlists" element={<Playlists />} />
               <Route path="/resellers" element={<Resellers />} />
               <Route path="/support-tickets" element={<SupportTickets />} />
               <Route path="/pricing-tiers" element={<PricingTiers />} />

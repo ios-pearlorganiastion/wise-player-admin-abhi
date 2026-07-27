@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiUsers, FiDollarSign, FiLayers, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock, FiLogOut, FiX } from 'react-icons/fi';
+import { FiPlay, FiUsers, FiDollarSign, FiLayers,FiList, FiTrendingUp, FiCheckSquare, FiBarChart2, FiUserCheck, FiTag, FiUserPlus, FiSettings, FiLifeBuoy, FiLock, FiLogOut, FiX } from 'react-icons/fi';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSupportTicketsCount } from '../../hooks/useSupportTickets';
@@ -17,11 +17,12 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
   const navItems = [
     { id: 'dashboard', icon: <FiPlay />, path: '/dashboard', label: 'Dashboard' },
     { id: 'devices', icon: <FiUsers />, path: '/devices', label: 'Devices' },
+    { id: 'playlists', icon: <FiList />, path: '/playlists', label: 'Playlists' },
     { id: 'payments', icon: <FiDollarSign />, path: '/payments', label: 'Payments' },
     { id: 'subscriptions', icon: <FiTrendingUp />, path: '/subscriptions', label: 'Subscriptions' },
     { id: 'activation-requests', icon: <FiCheckSquare />, path: '/activation-requests', label: 'Activation', showBadge: true, badgeKey: 'pendingActivations' },
     { id: 'support-tickets', icon: <FiLifeBuoy />, path: '/support-tickets', label: 'Support', showBadge: true, badgeKey: 'openSupportTickets' },
-    { id: 'pricing-tiers', icon: <FiLayers />, path: '/pricing-tiers', label: 'Pricing Tiers' },
+    
     { id: 'plans', icon: <FiTag />, path: '/plans', label: 'Plans' },
     { id: 'resellers', icon: <FiUserPlus />, path: '/resellers', label: 'Resellers' },
     { id: 'reports', icon: <FiBarChart2 />, path: '/reports', label: 'Reports' },
@@ -29,6 +30,7 @@ const Sidebar = ({ activePage, isMobileOpen, onMobileClose }) => {
 
   const superAdminItems = [
     { id: 'admin-management', icon: <FiSettings />, path: '/admin-management', label: 'Admins' },
+    { id: 'pricing-tiers', icon: <FiLayers />, path: '/pricing-tiers', label: 'Pricing Tiers' },
   ];
 
   const handleNavClick = (path) => {

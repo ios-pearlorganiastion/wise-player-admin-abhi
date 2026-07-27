@@ -230,3 +230,57 @@ export interface PricingTierRequest {
   maxQuantity: number | null;
   unitPrice: number;
 }
+
+export interface Playlist {
+  id: string;
+  deviceId: string;
+  name: string;
+  type: "XTREAM" | "M3U" | string;
+  serverUrl: string | null;
+  username: string | null;
+  password: string | null;
+  m3uUrl: string | null;
+  pinned: boolean;
+}
+
+export interface AdminAccount {
+  id: string;
+  email: string | null;
+  username: string;
+  fullName: string | null;
+  role: "ADMIN" | "SUPER_ADMIN" | "RESELLER" | "SUB_RESELLER";
+  active: boolean;
+  createdAt: string;
+  credits: number;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+}
+
+export interface AdminUpdateRequest {
+  username: string;
+  email: string;
+  fullName: string;
+  credits: number;
+  active: boolean;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+}
+
+export interface RolePermission {
+  role: string;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  updatedAt: string;
+  recentlyChangedByMe: boolean;
+}
+
+export interface CrudPermissionsResponse {
+  rolePermissions: RolePermission[];
+  individualPermissions: any[];
+}

@@ -84,3 +84,26 @@ export const PRICING_TIER_ENDPOINTS = {
   CREATE: "/api/admin/pricing-tiers",
   UPDATE: (id: string) => `/api/admin/pricing-tiers/${id}`,
 };
+
+export const PLAYLIST_ENDPOINTS = {
+  LIST: "/api/admin/playlists",
+  GET_BY_ID: (id: string) => `/api/admin/playlists/${id}`,
+  DELETE: (id: string) => `/api/admin/playlists/${id}`,
+  CREATE_XTREAM: "/api/admin/playlists/xtream",
+  UPDATE: (id: string) => `/api/admin/playlists/${id}`,
+  ASSIGN: (id: string) => `/api/admin/playlists/${id}/assign`,
+  UNASSIGN: (id: string) => `/api/admin/playlists/${id}/assign`,
+  TOGGLE_PIN: (id: string) => `/api/admin/playlists/${id}/pin`,
+};
+
+export const ADMIN_MANAGEMENT_ENDPOINTS = {
+  LIST_ALL: "/api/admin/management/all",
+  GET_BY_ID: (id: string) => `/api/admin/management/${id}`,
+  UPDATE: (id: string) => `/api/admin/management/${id}`,
+  TOGGLE_STATUS: (id: string) => `/api/admin/management/${id}/status`,
+  DELETE: (id: string) => `/api/admin/management/${id}`,
+};
+
+export const CRUD_PERMISSIONS_ENDPOINTS = {
+  GET: "/api/admin/crud-permissions",
+};
