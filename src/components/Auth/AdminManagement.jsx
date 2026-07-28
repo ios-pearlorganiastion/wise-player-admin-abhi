@@ -167,29 +167,29 @@ const AdminManagement = () => {
 
           {/* Invite section */}
           <Card>
-            <div className="max-w-xl mx-auto text-center">
+            <div >
               <h2 className="font-display font-semibold text-ink text-base mb-1.5">Invite new admin</h2>
               <p className="text-subtle text-sm mb-5">Enter the email of the person you want to invite as an administrator.</p>
 
               {inviteError ? <div className="mb-4 text-left"><ErrorAlert>{inviteError}</ErrorAlert></div> : null}
               {inviteSuccess ? <div className="mb-4 text-left"><ErrorAlert variant="success">{inviteSuccess}</ErrorAlert></div> : null}
 
-              <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-                <div className="w-full sm:flex-1">
-                  <Input
-                    icon={<FiMail />}
-                    type="email"
-                    placeholder="admin@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="!mb-0"
-                  />
-                </div>
+              <form onSubmit={handleInvite} className="flex flex-wrap gap-3 items-center justify-center">
+                <div className="relative flex-1 min-w-[220px]">
+                <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-subtle text-sm pointer-events-none" />
+             <input
+                  type="email"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   placeholder="admin@example.com"
+                   required
+                   className="w-full bg-surface2 border border-line rounded-lg pl-9 pr-3 h-11 text-sm text-ink outline-none focus:border-maroon-light transition-colors placeholder:text-subtle"
+                 />
+               </div>
                 <Button
                   type="submit"
                   variant="primary"
-                  className="gap-2 shrink-0 h-11 w-full sm:w-auto justify-center"
+                  className="gap-2 shrink-0 h-11 justify-center"
                   disabled={inviteMutation.isPending}
                 >
                   {inviteMutation.isPending ? "Sending..." : "Send invitation"} <FiSend />

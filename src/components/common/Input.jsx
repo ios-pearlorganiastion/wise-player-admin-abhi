@@ -1,7 +1,7 @@
 import React from 'react';
 
-const Input = ({ label, icon, className = '', ...props }) => (
-  <div className="mb-4">
+const Input = ({ label, icon, className = '', wrapperClassName = '', ...props }) => (
+  <div className={`mb-4 ${wrapperClassName}`}>
     {label ? <label className="block text-subtle text-xs font-medium mb-1.5">{label}</label> : null}
     <div className="relative flex items-center">
       {icon ? (

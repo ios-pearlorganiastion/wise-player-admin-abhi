@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { FiUsers, FiDollarSign, FiPlay, FiStar, FiActivity } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { FiUsers, FiDollarSign, FiPlay, FiStar, FiActivity, FiClock, FiCreditCard, FiTrendingUp } from 'react-icons/fi';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboard';
 import { useSubscriptions } from '../../hooks/useSubscriptions';
@@ -12,8 +13,47 @@ import ErrorAlert from '../common/ErrorAlert';
 import HamburgerIcon from '../common/HamburgerIcon';
 import ProfileMenu from '../common/ProfileMenu';
 
+const StatCard = ({ icon, iconBg, iconText, title, value, sub, index }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.06, duration: 0.35, ease: 'easeOut' }}
+  >
+    <Card className="flex items-center justify-between hover:border-line hover:-translate-y-0.5 transition-transform duration-150">
+      <div className="min-w-0">
+        <p className="text-subtle text-xs uppercase tracking-wide truncate">{title}</p>
+        <p className="font-mono font-semibold text-xl md:text-2xl text-ink mt-1">{value}</p>
+        {sub ? <p className="text-subtle text-xs mt-1">{sub}</p> : null}
+      </div>
+      <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 ${iconBg} ${iconText}`}>
+        {icon}
+      </div>
+    </Card>
+  </motion.div>
+);
+
+const BreakdownBar = ({ label, value, total, color, delay }) => {
+  const pct = total > 0 ? Math.min(100, Math.round((value / total) * 100)) : 0;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-subtle text-xs">{label}</span>
+        <span className="text-ink text-xs font-medium font-mono">{value}</span>
+      </div>
+      <div className="h-2 bg-surface2 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ delay, duration: 0.6, ease: 'easeOut' }}
+          className={`h-full rounded-full ${color}`}
+        />
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
-  const { user, logout } = useAuthContext();
+  const { user } = useAuthContext();
   const displayRole = user?.role === 'SUPER_ADMIN'
     ? 'Super_Admin'
     : user?.role
@@ -45,14 +85,35 @@ const Dashboard = () => {
     }).slice(0, 5);
   }, [subsData, filters]);
 
-  const stats = [
-    { title: 'Total devices', value: statsData?.totalDevices || 0, icon: <FiUsers />, iconBg: 'bg-maroon/15', iconText: 'text-maroon-light' },
-    { title: 'Net revenue', value: `€${statsData?.totalRevenue || 0}`, icon: <FiDollarSign />, iconBg: 'bg-sky-500/10', iconText: 'text-sky-400' },
-    { title: 'Active devices', value: statsData?.activeDevices || 0, icon: <FiActivity />, iconBg: 'bg-emerald-500/10', iconText: 'text-emerald-400' },
-    { title: 'Active subs', value: statsData?.activeSubscriptions || 0, icon: <FiStar />, iconBg: 'bg-amber-500/10', iconText: 'text-amber-400' },
+  const primaryStats = [
+    {
+      title: 'Total devices',
+      value: statsData?.totalDevices ?? 0,
+      sub: `${statsData?.activeDevices ?? 0} active`,
+      icon: <FiUsers />, iconBg: 'bg-maroon/15', iconText: 'text-maroon-light',
+    },
+    {
+      title: 'Subscriptions',
+      value: statsData?.totalSubscriptions ?? 0,
+      sub: `${statsData?.activeSubscriptions ?? 0} active`,
+      icon: <FiStar />, iconBg: 'bg-sky-500/10', iconText: 'text-sky-400',
+    },
+    {
+      title: 'Net revenue',
+      value: `€${statsData?.totalRevenue ?? 0}`,
+      sub: `${statsData?.totalPayments ?? 0} payments`,
+      icon: <FiDollarSign />, iconBg: 'bg-emerald-500/10', iconText: 'text-emerald-400',
+    },
+    {
+      title: 'Pending activations',
+      value: statsData?.pendingActivations ?? 0,
+      sub: (statsData?.pendingActivations ?? 0) > 0 ? 'Needs review' : 'All clear',
+      icon: <FiClock />, iconBg: 'bg-amber-500/10', iconText: 'text-amber-400',
+    },
   ];
 
-  const gridCols = 'grid-cols-[minmax(220px,3.5fr)_120px_120px_120px_110px]';
+  const totalDevices = statsData?.totalDevices || 0;
+  const totalSubs = statsData?.totalSubscriptions || 0;
 
   return (
     <div className="flex min-h-screen bg-base">
@@ -90,33 +151,91 @@ const Dashboard = () => {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
 
+          {/* Primary KPIs */}
           {isStatsLoading ? (
             <div className="flex justify-center py-10"><Spinner /></div>
           ) : statsError ? (
             <ErrorAlert>Failed to load dashboard stats: {statsError.message}</ErrorAlert>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-              {stats.map((stat, i) => (
-                <Card key={i} className="flex items-center justify-between hover:border-line hover:-translate-y-0.5 transition-transform duration-150">
-                  <div className="min-w-0">
-                    <p className="text-subtle text-xs uppercase tracking-wide truncate">{stat.title}</p>
-                    <p className="font-mono font-semibold text-xl md:text-2xl text-ink mt-1">{stat.value}</p>
-                  </div>
-                  <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.iconBg} ${stat.iconText}`}>
-                    {stat.icon}
-                  </div>
-                </Card>
+              {primaryStats.map((stat, i) => (
+                <StatCard key={stat.title} {...stat} index={i} />
               ))}
             </div>
           )}
 
+          {/* Breakdown panels */}
+          {!isStatsLoading && !statsError ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.35 }}
+              >
+                <Card>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FiUsers className="text-maroon-light text-sm" />
+                    <h3 className="font-display font-semibold text-ink text-sm">Device status</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <BreakdownBar label="Active" value={statsData?.activeDevices ?? 0} total={totalDevices} color="bg-emerald-400" delay={0.3} />
+                    <BreakdownBar label="Trial" value={statsData?.trialDevices ?? 0} total={totalDevices} color="bg-amber-400" delay={0.35} />
+                    <BreakdownBar label="Expired" value={statsData?.expiredDevices ?? 0} total={totalDevices} color="bg-maroon-light" delay={0.4} />
+                  </div>
+                  <p className="text-subtle text-[11px] mt-4 pt-3 border-t border-line">
+                    Out of {totalDevices} total devices registered on the platform.
+                  </p>
+                </Card>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25, duration: 0.35 }}
+              >
+                <Card>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FiTrendingUp className="text-sky-400 text-sm" />
+                    <h3 className="font-display font-semibold text-ink text-sm">Subscription health</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <BreakdownBar label="Active subscriptions" value={statsData?.activeSubscriptions ?? 0} total={totalSubs} color="bg-sky-400" delay={0.35} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-line">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                        <FiCreditCard className="text-xs" />
+                      </div>
+                      <div>
+                        <p className="font-mono font-semibold text-ink text-sm">{statsData?.totalPayments ?? 0}</p>
+                        <p className="text-subtle text-[11px]">Payments</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                        <FiClock className="text-xs" />
+                      </div>
+                      <div>
+                        <p className="font-mono font-semibold text-ink text-sm">{statsData?.pendingActivations ?? 0}</p>
+                        <p className="text-subtle text-[11px]">Pending</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            </div>
+          ) : null}
+
+          {/* Recent subscriptions */}
           <Card noPadding>
             <div className="flex items-center justify-between px-4 md:px-5 py-4 border-b border-line">
-              <h2 className="font-display font-semibold text-sm md:text-base text-ink">Recent subscriptions</h2>
+              <h2 className="font-display font-semibold text-sm md:text-base" style={{ color: '#F1EDEE' }}>
+                Recent subscriptions
+              </h2>
             </div>
 
             <div className="overflow-x-auto">
-              <div className={`grid ${gridCols} gap-4 px-4 md:px-5 py-3 min-w-[820px] border-b border-line`}>
+              <div className="grid grid-cols-[minmax(220px,3.5fr)_120px_120px_120px_110px] gap-4 px-4 md:px-5 py-3 min-w-[820px] border-b border-line">
                 <div className="flex items-center gap-1 text-subtle text-xs font-medium uppercase tracking-wide">
                   Mac address
                   <ColumnFilter column="deviceId" onFilterChange={handleFilterChange} placeholder="MAC/ID" />
@@ -154,7 +273,7 @@ const Dashboard = () => {
                 filteredSubs.map((sub) => (
                   <div
                     key={sub.id}
-                    className={`grid ${gridCols} gap-4 px-4 md:px-5 py-3.5 min-w-[820px] border-b border-line last:border-b-0 hover:bg-surface2/60 transition-colors`}
+                    className="grid grid-cols-[minmax(220px,3.5fr)_120px_120px_120px_110px] gap-4 px-4 md:px-5 py-3.5 min-w-[820px] border-b border-line last:border-b-0 hover:bg-surface2/60 transition-colors"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <FiPlay className="text-maroon-light shrink-0" />
