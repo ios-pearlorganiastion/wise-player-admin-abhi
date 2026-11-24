@@ -99,8 +99,12 @@ export const PLAYLIST_ENDPOINTS = {
 export const ADMIN_MANAGEMENT_ENDPOINTS = {
   LIST_ALL: "/api/admin/management/all",
   GET_BY_ID: (id: string) => `/api/admin/management/${id}`,
+  CREATE: "/api/admin/management/create",
+  INVITE: "/api/admin/management/invite",
+  VERIFY_INVITE: "/api/admin/management/invite/verify", // ?token=...
+  COMPLETE_SETUP: "/api/admin/management/setup/complete",
   UPDATE: (id: string) => `/api/admin/management/${id}`,
-  TOGGLE_STATUS: (id: string) => `/api/admin/management/${id}/status`,
+  TOGGLE_STATUS: (id: string) => `/api/admin/management/${id}/status`, // PATCH
   DELETE: (id: string) => `/api/admin/management/${id}`,
 };
 

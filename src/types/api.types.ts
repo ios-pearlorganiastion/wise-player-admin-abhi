@@ -250,12 +250,49 @@ export interface AdminAccount {
   fullName: string | null;
   role: "ADMIN" | "SUPER_ADMIN" | "RESELLER" | "SUB_RESELLER";
   active: boolean;
-  createdAt: string;
+  createdAt: string | null; // can be null right after POST /create
   credits: number;
   canCreate: boolean;
   canRead: boolean;
   canUpdate: boolean;
   canDelete: boolean;
+}
+
+// Role-level default CRUD permissions returned alongside the admin list
+export interface AdminBulkPermissions {
+  role: string;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  updatedAt: string | null;
+}
+
+// GET /api/admin/management/all
+export interface AdminListResponse {
+  bulkPermissions: AdminBulkPermissions | null;
+  content: AdminAccount[];
+}
+
+// POST /api/admin/management/create
+export interface AdminCreateRequest {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  role: "ADMIN";
+}
+
+// POST /api/admin/management/invite
+export interface AdminInviteResponse {
+  token: string;
+  inviteUrl: string;
+}
+
+// DELETE /api/admin/management/{id}
+export interface AdminDeleteResponse {
+  message: string;
+  success: boolean;
 }
 
 export interface AdminUpdateRequest {
@@ -283,4 +320,4 @@ export interface RolePermission {
 export interface CrudPermissionsResponse {
   rolePermissions: RolePermission[];
   individualPermissions: any[];
-}
+}

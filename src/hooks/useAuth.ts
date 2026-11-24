@@ -35,7 +35,7 @@ export const useInviteAdmin = () => {
 };
 
 export const useCompleteSetup = () => {
-  return useMutation<void, any, { token: string; password: string; fullName: string }>({
+  return useMutation<void, any, { token: string; password: string; fullName: string; username?: string }>({
     mutationFn: async (data) => {
       try {
         await apiClient.post(AUTH_ENDPOINTS.COMPLETE_SETUP, data);

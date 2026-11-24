@@ -16,7 +16,7 @@ const AdminSetup = () => {
   const navigate = useNavigate();
   const token = searchParams.get('token');
 
-  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -61,7 +61,8 @@ const AdminSetup = () => {
     }
 
     completeSetupMutation.mutate(
-      { token, password, fullName },
+      // fullName is kept in the payload (same value) so the existing API contract still works
+      { token, password, username: username.trim(), fullName: username.trim() },
       {
         onSuccess: () => {
           setSuccess("Account activated successfully! Redirecting to login...");
@@ -101,7 +102,7 @@ const AdminSetup = () => {
       </div>
       <h2 className="font-display font-semibold text-ink text-lg text-center mb-2">Complete your setup</h2>
       <p className="text-subtle text-sm text-center mb-5">
-        Set your password and account details to activate your admin account.
+        Choose a username and password to activate your admin account.
       </p>
 
       {error ? <div className="mb-4"><ErrorAlert>{error}</ErrorAlert></div> : null}
@@ -110,12 +111,13 @@ const AdminSetup = () => {
       {!success ? (
         <form onSubmit={handleSubmit}>
           <Input
-            label="Full name"
+            label="Username"
             icon={<FiUser />}
             type="text"
-            placeholder="Full name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Choose a username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
             required
           />
           <PasswordInput
@@ -141,4 +143,4 @@ const AdminSetup = () => {
   );
 };
 
-export default AdminSetup;
+export default AdminSetup;
